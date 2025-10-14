@@ -14,7 +14,6 @@ import SyncNotification from '@/components/SyncNotification';
 import StorageDebug from '@/components/StorageDebug';
 import { Platform } from '@/types';
 import { savePrayerMoment } from '@/lib/storage';
-import { usePlatformDetection } from '@/hooks/usePlatformDetection';
 import { getTodayCount, isTodayCompleted, syncStorageData } from '@/lib/storage';
 
 export default function Home() {
@@ -22,7 +21,6 @@ export default function Home() {
   const [todayCount, setTodayCount] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [currentPlatform, setCurrentPlatform] = useState<Platform>('unknown');
-  const { platform } = usePlatformDetection();
 
   /**
    * Met à jour le compteur quotidien
@@ -78,7 +76,7 @@ export default function Home() {
    */
   const handleNextMoment = () => {
     // Enregistrer le moment de prière
-    savePrayerMoment(platform);
+    savePrayerMoment(currentPlatform);
     
     // Mettre à jour le compteur
     updateTodayCount();
