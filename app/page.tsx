@@ -105,7 +105,7 @@ export default function Home() {
           7 Rendez-vous de Prière
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Prenez 7 moments de recueillement dans votre journée pour vous connecter à Dieu
+          "Sept fois le jour je te loue à cause de tes justes ordonnances." - Psaume 119, verset 164
         </p>
       </header>
 

@@ -87,11 +87,10 @@ export default function CalendarPage() {
         {/* Message d'encouragement */}
         <div className="bg-white rounded-lg p-6 shadow-sm text-center">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">
-            Continuez votre cheminement spirituel
+            Psaume 119, verset 164
           </h3>
-          <p className="text-gray-600">
-            Chaque moment de prière vous rapproche de Dieu. 
-            Gardez la régularité pour nourrir votre foi au quotidien.
+          <p className="text-gray-600 italic">
+            "Sept fois le jour je te loue à cause de tes justes ordonnances."
           </p>
         </div>
       </main>
