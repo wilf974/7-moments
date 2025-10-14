@@ -48,8 +48,6 @@ export function getMonthDates(year: number, month: number): Date[] {
   
   // Premier jour du mois
   const firstDayOfMonth = new Date(year, month, 1);
-  // Dernier jour du mois
-  const lastDayOfMonth = new Date(year, month + 1, 0);
   
   // Jour de la semaine du premier jour (0 = dimanche, 1 = lundi, etc.)
   const firstDayWeekday = firstDayOfMonth.getDay();
@@ -60,8 +58,7 @@ export function getMonthDates(year: number, month: number): Date[] {
   
   // Générer 42 jours (6 semaines) pour remplir complètement la grille du calendrier
   for (let i = 0; i < 42; i++) {
-    const date = new Date(startDate);
-    date.setDate(startDate.getDate() + i);
+    const date = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000));
     dates.push(date);
   }
   
