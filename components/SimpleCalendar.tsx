@@ -107,19 +107,19 @@ export default function SimpleCalendar() {
       <div className="flex flex-wrap gap-4 mb-6 text-sm">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-green-500 rounded"></div>
-          <span>7/7 moments</span>
+          <span className="text-black">7/7 moments</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-yellow-400 rounded"></div>
-          <span>1-6 moments</span>
+          <span className="text-black">1-6 moments</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-gray-100 rounded"></div>
-          <span>Aucun moment</span>
+          <span className="text-black">Aucun moment</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-blue-100 border-2 border-blue-300 rounded"></div>
-          <span>Aujourd&apos;hui</span>
+          <span className="text-black">Aujourd&apos;hui</span>
         </div>
       </div>
 
