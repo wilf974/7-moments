@@ -61,7 +61,7 @@ export default function Home() {
    * Gestionnaire de limite atteinte
    */
   const handleLimitReached = () => {
-    alert('Vous avez déjà accompli vos 7 moments de prière aujourd&apos;hui !');
+    alert('Vous avez déjà accompli vos 7 moments de prière aujourd\'hui !');
   };
 
   /**
@@ -127,7 +127,7 @@ export default function Home() {
                   {todayCount}
                 </div>
                 <div className="text-sm text-gray-600">
-                  Moments aujourd&apos;hui
+                  Moments aujourd'hui
                 </div>
               </div>
               

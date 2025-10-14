@@ -116,7 +116,7 @@ export default function PrayerButton({
    * Obtient le message de motivation
    */
   const getMotivationMessage = () => {
-    if (isCompleted) return 'Félicitations ! Vous avez accompli vos 7 moments de prière aujourd&apos;hui.';
+    if (isCompleted) return 'Félicitations ! Vous avez accompli vos 7 moments de prière aujourd\'hui.';
     if (todayCount >= 5) return 'Presque terminé ! Plus que quelques moments.';
     if (todayCount >= 3) return 'Excellent ! Vous êtes à mi-chemin.';
     if (todayCount >= 1) return 'Continuez ! Chaque moment compte.';
@@ -131,7 +131,7 @@ export default function PrayerButton({
           {todayCount}/7
         </div>
         <div className="text-sm text-gray-600">
-          Moments de prière aujourd&apos;hui
+          Moments de prière aujourd'hui
         </div>
       </div>
 
