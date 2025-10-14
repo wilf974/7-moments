@@ -290,13 +290,6 @@ export default function SimpleCalendar() {
         </div>
       )}
 
-      {/* Debug info */}
-      <div className="mt-4 p-4 bg-gray-100 rounded text-xs">
-        <div><strong>Debug Info:</strong></div>
-        <div>Date actuelle: {currentDate.toISOString()}</div>
-        <div>14 octobre jour de la semaine: {new Date(2025, 9, 14).getDay()} (0=Dim, 1=Lun, 2=Mar, 3=Mer, 4=Jeu, 5=Ven, 6=Sam)</div>
-        <div>14 octobre nom: {['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'][new Date(2025, 9, 14).getDay()]}</div>
-      </div>
     </div>
   );
 }
