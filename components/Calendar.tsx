@@ -27,10 +27,23 @@ export default function Calendar({ className = '' }: CalendarProps) {
    * Charge les données du mois
    */
   const loadMonthData = useCallback(() => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const data = getMonthData(year, month);
-    setMonthData(data);
+    try {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      console.log('Chargement des données pour:', year, month);
+      const data = getMonthData(year, month);
+      console.log('Données chargées:', data);
+      setMonthData(data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des données:', error);
+      // Créer des données de test en cas d'erreur
+      const testData: MonthData = {
+        year: 2025,
+        month: 9,
+        days: []
+      };
+      setMonthData(testData);
+    }
   }, [currentDate]);
 
   /**

@@ -6,7 +6,7 @@
  */
 
 import Link from 'next/link';
-import Calendar from '@/components/Calendar';
+import SimpleCalendar from '@/components/SimpleCalendar';
 import { getUserStats } from '@/lib/storage';
 
 export default function CalendarPage() {
@@ -82,7 +82,7 @@ export default function CalendarPage() {
         </div>
 
         {/* Calendrier */}
-        <Calendar className="mb-8" />
+        <SimpleCalendar />
 
         {/* Message d'encouragement */}
         <div className="bg-white rounded-lg p-6 shadow-sm text-center">
