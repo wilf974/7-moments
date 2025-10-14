@@ -151,6 +151,7 @@ export default function Calendar({ className = '' }: CalendarProps) {
           const date = new Date(dayData.date);
           const dayNumber = date.getDate();
           const isCurrentDay = isToday(date);
+          const isCurrentMonth = date.getMonth() === currentDate.getMonth();
           
           return (
             <button
@@ -161,10 +162,13 @@ export default function Calendar({ className = '' }: CalendarProps) {
                 hover:scale-105 hover:shadow-md
                 ${getDayColor(dayData)}
                 ${isCurrentDay ? 'ring-2 ring-blue-400' : ''}
+                ${!isCurrentMonth ? 'opacity-40' : ''}
               `}
             >
               <div className="flex flex-col items-center">
-                <span className="font-medium">{dayNumber}</span>
+                <span className={`font-medium ${!isCurrentMonth ? 'text-gray-400' : ''}`}>
+                  {dayNumber}
+                </span>
                 {getDayIcon(dayData) && (
                   <span className="text-xs mt-1">{getDayIcon(dayData)}</span>
                 )}

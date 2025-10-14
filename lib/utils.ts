@@ -41,15 +41,28 @@ export function getMonthEnd(date: Date): Date {
 }
 
 /**
- * Génère un tableau de dates pour un mois donné
+ * Génère un tableau de dates pour un mois donné avec les jours précédents/suivants pour remplir la grille
  */
 export function getMonthDates(year: number, month: number): Date[] {
   const dates: Date[] = [];
-  const startDate = new Date(year, month, 1);
-  const endDate = new Date(year, month + 1, 0);
   
-  for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
-    dates.push(new Date(date));
+  // Premier jour du mois
+  const firstDayOfMonth = new Date(year, month, 1);
+  // Dernier jour du mois
+  const lastDayOfMonth = new Date(year, month + 1, 0);
+  
+  // Jour de la semaine du premier jour (0 = dimanche, 1 = lundi, etc.)
+  const firstDayWeekday = firstDayOfMonth.getDay();
+  
+  // Commencer au dimanche de la semaine qui contient le premier jour du mois
+  const startDate = new Date(firstDayOfMonth);
+  startDate.setDate(startDate.getDate() - firstDayWeekday);
+  
+  // Générer 42 jours (6 semaines) pour remplir complètement la grille du calendrier
+  for (let i = 0; i < 42; i++) {
+    const date = new Date(startDate);
+    date.setDate(startDate.getDate() + i);
+    dates.push(date);
   }
   
   return dates;
