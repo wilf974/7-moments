@@ -102,7 +102,7 @@ export default function Home() {
       {/* Header */}
       <header className="text-center py-8 px-4">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-2">
-          7 Rendez-vous de Prière
+          Sept rendez-vous chaque jour avec Dieu
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
           &ldquo;Sept fois le jour je te loue à cause de tes justes ordonnances.&rdquo; - Psaume 119, verset 164

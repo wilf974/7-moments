@@ -20,7 +20,7 @@ export default function CalendarPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-800">
-                Calendrier de Prière
+                Sept rendez-vous chaque jour avec Dieu
               </h1>
               <p className="text-gray-600">
                 Suivez vos moments de recueillement
