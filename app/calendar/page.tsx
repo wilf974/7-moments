@@ -90,7 +90,7 @@ export default function CalendarPage() {
             Psaume 119, verset 164
           </h3>
           <p className="text-gray-600 italic">
-            "Sept fois le jour je te loue à cause de tes justes ordonnances."
+            &ldquo;Sept fois le jour je te loue à cause de tes justes ordonnances.&rdquo;
           </p>
         </div>
       </main>

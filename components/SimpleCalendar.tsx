@@ -28,25 +28,7 @@ interface MonthData {
 
 // Suppression des données de test - utilisation des vraies données du cache
 
-/**
- * Génère les dates d'un mois avec les jours précédents/suivants
- */
-function getMonthDates(year: number, month: number): Date[] {
-  const dates: Date[] = [];
-  
-  const firstDayOfMonth = new Date(year, month, 1);
-  const firstDayWeekday = firstDayOfMonth.getDay();
-  
-  const startDate = new Date(firstDayOfMonth);
-  startDate.setDate(startDate.getDate() - firstDayWeekday);
-  
-  for (let i = 0; i < 42; i++) {
-    const date = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000));
-    dates.push(date);
-  }
-  
-  return dates;
-}
+// Suppression de la fonction getMonthDates non utilisée - utilisation de getMonthData du système de stockage
 
 /**
  * Formate une date au format YYYY-MM-DD sans décalage UTC.
@@ -87,12 +69,7 @@ export default function SimpleCalendar() {
   const [currentDate] = useState(new Date(2025, 9, 14)); // 14 octobre 2025
   const [monthData, setMonthData] = useState<MonthData | null>(null);
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
-  const [userStats, setUserStats] = useState({
-    totalMoments: 0,
-    currentStreak: 0,
-    daysCompleted: 0,
-    lastActivity: null as string | null,
-  });
+  // Suppression de userStats non utilisé - les statistiques sont gérées par le composant Calendar principal
 
   useEffect(() => {
     const year = currentDate.getFullYear();
@@ -102,9 +79,7 @@ export default function SimpleCalendar() {
     const realMonthData = getMonthData(year, month);
     setMonthData(realMonthData);
     
-    // Charger les statistiques utilisateur
-    const stats = getUserStats();
-    setUserStats(stats);
+    // Les statistiques utilisateur sont gérées par le composant Calendar principal
 
     // Sélectionner le jour d'aujourd'hui par défaut
     const todayData = realMonthData.days.find(day => day.date === formatDate(currentDate));

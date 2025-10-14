@@ -60,56 +60,8 @@ export default function Timer({
     setIntervalId(id);
   }, [state, onStart, onComplete]);
 
-  /**
-   * Met en pause le timer
-   */
-  const pauseTimer = useCallback(() => {
-    if (state !== 'running') return;
-    
-    setState('paused');
-    onPause?.();
-    
-    if (intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
-    }
-  }, [state, intervalId, onPause]);
-
-  /**
-   * Reprend le timer
-   */
-  const resumeTimer = useCallback(() => {
-    if (state !== 'paused') return;
-    
-    setState('running');
-    onResume?.();
-    
-    const id = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          setState('completed');
-          onComplete?.();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    
-    setIntervalId(id);
-  }, [state, onResume, onComplete]);
-
-  /**
-   * Remet à zéro le timer
-   */
-  const resetTimer = useCallback(() => {
-    setTimeLeft(duration);
-    setState('idle');
-    
-    if (intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
-    }
-  }, [duration, intervalId]);
+  // Suppression des fonctions pauseTimer, resumeTimer et resetTimer non utilisées
+  // Le bouton "Suivant" remplace tous ces contrôles
 
   /**
    * Auto-start si demandé
