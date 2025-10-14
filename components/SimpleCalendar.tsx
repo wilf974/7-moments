@@ -7,12 +7,14 @@
 
 import { useState, useEffect } from 'react';
 import { parseDate } from '@/lib/utils';
+import { getMonthData, getUserStats } from '@/lib/storage';
 
 interface DayData {
   date: string;
   moments: {
-    timestamp: string;
-    label: string;
+    timestamp: number;
+    platform: string;
+    duration: number;
   }[];
   completed: boolean;
   count: number;
@@ -24,38 +26,7 @@ interface MonthData {
   days: DayData[];
 }
 
-const SAMPLE_DAY_STATUS: Record<string, Partial<DayData>> = {
-  '2025-10-07': {
-    completed: true,
-    count: 7,
-    moments: [
-      { timestamp: '2025-10-07T06:30:00', label: 'Prière du matin' },
-      { timestamp: '2025-10-07T09:00:00', label: 'Louange' },
-      { timestamp: '2025-10-07T11:30:00', label: 'Lecture biblique' },
-      { timestamp: '2025-10-07T14:00:00', label: 'Prière de midi' },
-      { timestamp: '2025-10-07T17:45:00', label: 'Méditation' },
-      { timestamp: '2025-10-07T19:15:00', label: 'Prière du soir' },
-      { timestamp: '2025-10-07T21:00:00', label: 'Gratitude' },
-    ],
-  },
-  '2025-10-14': {
-    completed: false,
-    count: 4,
-    moments: [
-      { timestamp: '2025-10-14T07:00:00', label: 'Prière du matin' },
-      { timestamp: '2025-10-14T12:15:00', label: 'Lecture biblique' },
-      { timestamp: '2025-10-14T15:40:00', label: 'Louange courte' },
-      { timestamp: '2025-10-14T20:10:00', label: 'Partage de foi' },
-    ],
-  },
-  '2025-10-10': {
-    completed: false,
-    count: 1,
-    moments: [
-      { timestamp: '2025-10-10T18:45:00', label: 'Louange' },
-    ],
-  },
-};
+// Suppression des données de test - utilisation des vraies données du cache
 
 /**
  * Génère les dates d'un mois avec les jours précédents/suivants
@@ -116,46 +87,28 @@ export default function SimpleCalendar() {
   const [currentDate] = useState(new Date(2025, 9, 14)); // 14 octobre 2025
   const [monthData, setMonthData] = useState<MonthData | null>(null);
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
+  const [userStats, setUserStats] = useState({
+    totalMoments: 0,
+    currentStreak: 0,
+    daysCompleted: 0,
+    lastActivity: null as string | null,
+  });
 
   useEffect(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     
-    const dates = getMonthDates(year, month);
-    const days: DayData[] = dates.map(date => ({
-      date: formatDate(date),
-      moments: [],
-      completed: false,
-      count: 0,
-    }));
-
-    const enhancedDays = days.map(day => {
-      const override = SAMPLE_DAY_STATUS[day.date];
-      if (!override) return day;
-
-      return {
-        ...day,
-        ...override,
-      };
-    });
+    // Utiliser les vraies données du cache
+    const realMonthData = getMonthData(year, month);
+    setMonthData(realMonthData);
     
-    const monthPayload: MonthData = {
-      year,
-      month,
-      days: enhancedDays,
-    };
+    // Charger les statistiques utilisateur
+    const stats = getUserStats();
+    setUserStats(stats);
 
-    setMonthData(monthPayload);
-
-    setSelectedDay((previous) => {
-      if (previous) {
-        const updated = enhancedDays.find(day => day.date === previous.date);
-        if (updated) return updated;
-      }
-
-      const todayData = enhancedDays.find(day => day.date === formatDate(currentDate));
-      return todayData || enhancedDays[0] || null;
-    });
+    // Sélectionner le jour d'aujourd'hui par défaut
+    const todayData = realMonthData.days.find(day => day.date === formatDate(currentDate));
+    setSelectedDay(todayData || realMonthData.days[0] || null);
   }, [currentDate]);
 
   if (!monthData) {
@@ -272,7 +225,9 @@ export default function SimpleCalendar() {
                   key={`${selectedDay.date}-${index}`}
                   className="flex items-center justify-between rounded-md bg-white px-3 py-2 shadow-sm border border-gray-200"
                 >
-                  <span className="text-sm font-medium text-gray-900">{moment.label}</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    Moment de prière ({moment.platform})
+                  </span>
                   <span className="text-sm text-gray-600">
                     {new Intl.DateTimeFormat('fr-FR', {
                       hour: '2-digit',
