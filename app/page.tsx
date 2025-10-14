@@ -1,102 +1,184 @@
-import Image from "next/image";
+'use client';
+
+/**
+ * Page principale de l'application 7 Rendez-vous de Prière
+ * Assemble tous les composants principaux
+ */
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import PrayerButton from '@/components/PrayerButton';
+import Timer from '@/components/Timer';
+import PlatformDetector from '@/components/PlatformDetector';
+import { Platform } from '@/types';
+import { getTodayCount, isTodayCompleted } from '@/lib/storage';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [showTimer, setShowTimer] = useState(false);
+  const [todayCount, setTodayCount] = useState(0);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [currentPlatform, setCurrentPlatform] = useState<Platform>('unknown');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  /**
+   * Met à jour le compteur quotidien
+   */
+  const updateTodayCount = () => {
+    const count = getTodayCount();
+    const completed = isTodayCompleted();
+    setTodayCount(count);
+    setIsCompleted(completed);
+  };
+
+  /**
+   * Effet pour mettre à jour le compteur au montage
+   */
+  useEffect(() => {
+    updateTodayCount();
+  }, []);
+
+  /**
+   * Gestionnaire de démarrage d'un moment de prière
+   */
+  const handlePrayerStarted = () => {
+    setShowTimer(true);
+    updateTodayCount();
+  };
+
+  /**
+   * Gestionnaire de fin de timer
+   */
+  const handleTimerCompleted = () => {
+    setShowTimer(false);
+    updateTodayCount();
+  };
+
+  /**
+   * Gestionnaire de limite atteinte
+   */
+  const handleLimitReached = () => {
+    alert('Vous avez déjà accompli vos 7 moments de prière aujourd&apos;hui !');
+  };
+
+  /**
+   * Gestionnaire de détection de plateforme
+   */
+  const handlePlatformDetected = (platform: Platform) => {
+    setCurrentPlatform(platform);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
+      {/* Détecteur de plateforme */}
+      <PlatformDetector 
+        onPlatformDetected={handlePlatformDetected}
+        showBadge={true}
+      />
+
+      {/* Header */}
+      <header className="text-center py-8 px-4">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-2">
+          7 Rendez-vous de Prière
+        </h1>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Prenez 7 moments de recueillement dans votre journée pour vous connecter à Dieu
+        </p>
+      </header>
+
+      {/* Contenu principal */}
+      <main className="container mx-auto px-4 py-8">
+        {!showTimer ? (
+          /* Vue principale avec bouton de prière */
+          <div className="max-w-2xl mx-auto">
+            <PrayerButton
+              onPrayerStarted={handlePrayerStarted}
+              onLimitReached={handleLimitReached}
+              className="mb-8"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+
+            {/* Statistiques rapides */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <div className="bg-white rounded-lg p-6 shadow-sm text-center">
+                <div className="text-2xl font-bold text-purple-600 mb-1">
+                  {todayCount}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Moments aujourd&apos;hui
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg p-6 shadow-sm text-center">
+                <div className="text-2xl font-bold text-blue-600 mb-1">
+                  {isCompleted ? '✅' : '⏳'}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Statut du jour
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg p-6 shadow-sm text-center">
+                <div className="text-2xl font-bold text-indigo-600 mb-1">
+                  {currentPlatform === 'telegram' ? '📱' : 
+                   currentPlatform === 'ios' ? '🍎' : 
+                   currentPlatform === 'android' ? '🤖' : '🌐'}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Plateforme
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation vers le calendrier */}
+            <div className="text-center">
+              <Link
+                href="/calendar"
+                className="inline-flex items-center px-6 py-3 bg-white text-gray-700 rounded-lg shadow-sm hover:shadow-md transition-shadow font-medium"
+              >
+                📅 Voir le calendrier
+              </Link>
+            </div>
+          </div>
+        ) : (
+          /* Vue timer */
+          <div className="max-w-md mx-auto">
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                  Moment de Prière
+                </h2>
+                <p className="text-gray-600">
+                  Prenez un moment pour vous recueillir
+                </p>
+              </div>
+              
+              <Timer
+                duration={60}
+                onComplete={handleTimerCompleted}
+                autoStart={true}
+                className="mb-6"
+              />
+              
+              <div className="text-center">
+                <button
+                  onClick={() => setShowTimer(false)}
+                  className="px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
         </div>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="text-center py-8 px-4 text-gray-500 text-sm">
+        <p>
+          Application 7 Rendez-vous de Prière • 
+          Données stockées localement sur votre appareil
+        </p>
+        <p className="mt-2">
+          Développé avec ❤️ pour votre cheminement spirituel
+        </p>
       </footer>
     </div>
   );
