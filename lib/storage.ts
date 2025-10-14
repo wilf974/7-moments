@@ -70,7 +70,7 @@ export function savePrayerMoment(platform: Platform): void {
     setCookie(STORAGE_KEYS.PRAYER_DATA, JSON.stringify(allData), {
       expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 an
       path: '/',
-      secure: true,
+      secure: false, // Permettre HTTP pour Telegram et développement
       sameSite: 'lax',
     });
     
@@ -187,7 +187,7 @@ export function savePlatformInfo(platform: Platform): void {
     setCookie(STORAGE_KEYS.PLATFORM_INFO, JSON.stringify(platformData), {
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 jours
       path: '/',
-      secure: true,
+      secure: false, // Permettre HTTP pour Telegram et développement
       sameSite: 'lax',
     });
     
@@ -310,30 +310,69 @@ export function syncStorageData(): void {
     // Vérifier que cookieData est une string
     const cookieDataString = typeof cookieData === 'string' ? cookieData : null;
     
+    console.log('🔄 Synchronisation des données:', {
+      hasCookie: !!cookieDataString,
+      hasLocal: !!localData,
+      cookieLength: cookieDataString?.length || 0,
+      localLength: localData?.length || 0
+    });
+    
     if (cookieDataString && localData) {
       // Les deux existent, vérifier s'ils sont identiques
       if (cookieDataString !== localData) {
-        console.log('Synchronisation des données entre cookies et localStorage');
-        // Privilégier les cookies (plus récents)
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEYS.PRAYER_DATA, cookieDataString);
+        console.log('📱 Synchronisation: fusion des données entre cookies et localStorage');
+        
+        try {
+          const cookieObj = JSON.parse(cookieDataString);
+          const localObj = JSON.parse(localData);
+          
+          // Fusionner les données (privilégier les plus récentes)
+          const mergedData = { ...localObj, ...cookieObj };
+          
+          // Mettre à jour les deux stockages
+          const mergedString = JSON.stringify(mergedData);
+          
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(STORAGE_KEYS.PRAYER_DATA, mergedString);
+          }
+          
+          setCookie(STORAGE_KEYS.PRAYER_DATA, mergedString, {
+            expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+            path: '/',
+            secure: false,
+            sameSite: 'lax',
+          });
+          
+          console.log('✅ Données fusionnées avec succès');
+        } catch (parseError) {
+          console.error('Erreur lors du parsing des données:', parseError);
+          // En cas d'erreur, privilégier les cookies
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(STORAGE_KEYS.PRAYER_DATA, cookieDataString);
+          }
         }
+      } else {
+        console.log('✅ Données déjà synchronisées');
       }
     } else if (cookieDataString && !localData) {
       // Seuls les cookies existent, copier vers localStorage
+      console.log('📱 Synchronisation: copie des cookies vers localStorage');
       if (typeof window !== 'undefined') {
         localStorage.setItem(STORAGE_KEYS.PRAYER_DATA, cookieDataString);
       }
     } else if (!cookieDataString && localData) {
       // Seul localStorage existe, copier vers cookies
+      console.log('📱 Synchronisation: copie du localStorage vers cookies');
       setCookie(STORAGE_KEYS.PRAYER_DATA, localData, {
         expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
         path: '/',
-        secure: true,
+        secure: false,
         sameSite: 'lax',
       });
+    } else {
+      console.log('ℹ️ Aucune donnée à synchroniser');
     }
   } catch (error) {
-    console.error('Erreur lors de la synchronisation des données:', error);
+    console.error('❌ Erreur lors de la synchronisation des données:', error);
   }
 }
