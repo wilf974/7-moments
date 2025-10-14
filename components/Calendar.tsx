@@ -18,7 +18,8 @@ interface CalendarProps {
  * Composant Calendar
  */
 export default function Calendar({ className = '' }: CalendarProps) {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  // Initialiser avec octobre 2025 pour le test
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 9, 14)); // 14 octobre 2025
   const [monthData, setMonthData] = useState<MonthData | null>(null);
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
 
