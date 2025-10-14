@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { MonthData, DayData } from '@/types';
 import { getMonthData } from '@/lib/storage';
-import { getMonthName, formatDate, isToday } from '@/lib/utils';
+import { getMonthName, formatDate, isToday, parseDate } from '@/lib/utils';
 
 interface CalendarProps {
   className?: string;
@@ -73,7 +73,7 @@ export default function Calendar({ className = '' }: CalendarProps) {
   const getDayColor = (dayData: DayData) => {
     if (dayData.completed) return 'bg-green-500 text-white';
     if (dayData.count > 0) return 'bg-yellow-400 text-gray-800';
-    if (isToday(new Date(dayData.date))) return 'bg-blue-100 text-blue-800 border-2 border-blue-300';
+    if (isToday(parseDate(dayData.date))) return 'bg-blue-100 text-blue-800 border-2 border-blue-300';
     return 'bg-gray-100 text-gray-600';
   };
 
@@ -162,7 +162,7 @@ export default function Calendar({ className = '' }: CalendarProps) {
         
         {/* Jours du mois */}
         {monthData.days.map((dayData) => {
-          const date = new Date(dayData.date);
+          const date = parseDate(dayData.date);
           const dayNumber = date.getDate();
           const isCurrentDay = isToday(date);
           const isCurrentMonth = date.getMonth() === currentDate.getMonth();
@@ -225,7 +225,7 @@ export default function Calendar({ className = '' }: CalendarProps) {
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-gray-800">
-                {formatDate(new Date(selectedDay.date))}
+                {formatDate(parseDate(selectedDay.date))}
               </h3>
               <button
                 onClick={closeModal}

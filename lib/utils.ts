@@ -13,10 +13,34 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Formate une date au format YYYY-MM-DD
+ * Formate une date au format YYYY-MM-DD en conservant le fuseau horaire local.
  */
 export function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Convertit une chaîne YYYY-MM-DD en Date (fusion locale) sans décalage UTC.
+ */
+export function parseDate(dateString: string): Date {
+  const [yearStr, monthStr, dayStr] = dateString.split('-');
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+  const day = Number(dayStr);
+
+  if (
+    Number.isNaN(year) ||
+    Number.isNaN(month) ||
+    Number.isNaN(day)
+  ) {
+    throw new Error(`Format de date invalide: ${dateString}`);
+  }
+
+  return new Date(year, month - 1, day);
 }
 
 /**
