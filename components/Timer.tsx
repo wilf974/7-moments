@@ -15,6 +15,7 @@ interface TimerProps {
   onStart?: () => void;
   onPause?: () => void;
   onResume?: () => void;
+  onNext?: () => void; // Nouveau callback pour passer au moment suivant
   autoStart?: boolean;
   className?: string;
 }
@@ -28,6 +29,7 @@ export default function Timer({
   onStart,
   onPause,
   onResume,
+  onNext,
   autoStart = false,
   className = '',
 }: TimerProps) {
@@ -229,36 +231,28 @@ export default function Timer({
         
         {state === 'running' && (
           <button
-            onClick={pauseTimer}
-            className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium"
+            onClick={onNext}
+            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
           >
-            Pause
+            Suivant
           </button>
         )}
         
         {state === 'paused' && (
-          <>
-            <button
-              onClick={resumeTimer}
-              className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
-            >
-              Reprendre
-            </button>
-            <button
-              onClick={resetTimer}
-              className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
-            >
-              Reset
-            </button>
-          </>
+          <button
+            onClick={onNext}
+            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+          >
+            Suivant
+          </button>
         )}
         
         {state === 'completed' && (
           <button
-            onClick={resetTimer}
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+            onClick={onNext}
+            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
           >
-            Recommencer
+            Suivant
           </button>
         )}
       </div>

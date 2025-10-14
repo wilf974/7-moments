@@ -13,6 +13,8 @@ import PlatformDetector from '@/components/PlatformDetector';
 import SyncNotification from '@/components/SyncNotification';
 import StorageDebug from '@/components/StorageDebug';
 import { Platform } from '@/types';
+import { savePrayerMoment } from '@/lib/storage';
+import { usePlatformDetection } from '@/hooks/usePlatformDetection';
 import { getTodayCount, isTodayCompleted, syncStorageData } from '@/lib/storage';
 
 export default function Home() {
@@ -20,6 +22,7 @@ export default function Home() {
   const [todayCount, setTodayCount] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [currentPlatform, setCurrentPlatform] = useState<Platform>('unknown');
+  const { platform } = usePlatformDetection();
 
   /**
    * Met à jour le compteur quotidien
@@ -68,6 +71,20 @@ export default function Home() {
    */
   const handlePlatformDetected = (platform: Platform) => {
     setCurrentPlatform(platform);
+  };
+
+  /**
+   * Gestionnaire pour passer au moment suivant
+   */
+  const handleNextMoment = () => {
+    // Enregistrer le moment de prière
+    savePrayerMoment(platform);
+    
+    // Mettre à jour le compteur
+    updateTodayCount();
+    
+    // Retourner à la vue principale
+    setShowTimer(false);
   };
 
   return (
@@ -163,18 +180,10 @@ export default function Home() {
               <Timer
                 duration={60}
                 onComplete={handleTimerCompleted}
+                onNext={handleNextMoment}
                 autoStart={true}
                 className="mb-6"
               />
-              
-              <div className="text-center">
-                <button
-                  onClick={() => setShowTimer(false)}
-                  className="px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  Annuler
-                </button>
-              </div>
             </div>
         </div>
         )}
