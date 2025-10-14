@@ -284,7 +284,7 @@ export default function SimpleCalendar() {
             </ul>
           ) : (
             <div className="rounded-md bg-white px-3 py-4 text-sm text-gray-600 border border-dashed border-gray-300">
-              Aucun moment enregistré pour l'instant. Utilisez l'application de prière pour créer vos moments.
+              Aucun moment enregistré pour l&apos;instant. Utilisez l&apos;application de prière pour créer vos moments.
             </div>
           )}
         </div>
