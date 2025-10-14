@@ -131,7 +131,7 @@ export default function PrayerButton({
           {todayCount}/7
         </div>
         <div className="text-sm text-gray-600">
-          Moments de prière aujourd'hui
+          Moments de prière aujourd&apos;hui
         </div>
       </div>
 

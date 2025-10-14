@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { parseDate } from '@/lib/utils';
-import { getMonthData, getUserStats } from '@/lib/storage';
+import { getMonthData } from '@/lib/storage';
 
 interface DayData {
   date: string;

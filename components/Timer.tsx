@@ -13,8 +13,6 @@ interface TimerProps {
   duration?: number; // Durée en secondes, par défaut 60
   onComplete?: () => void;
   onStart?: () => void;
-  onPause?: () => void;
-  onResume?: () => void;
   onNext?: () => void; // Nouveau callback pour passer au moment suivant
   autoStart?: boolean;
   className?: string;
@@ -27,8 +25,6 @@ export default function Timer({
   duration = 60,
   onComplete,
   onStart,
-  onPause,
-  onResume,
   onNext,
   autoStart = false,
   className = '',

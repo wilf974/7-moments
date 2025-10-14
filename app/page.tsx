@@ -127,7 +127,7 @@ export default function Home() {
                   {todayCount}
                 </div>
                 <div className="text-sm text-gray-600">
-                  Moments aujourd'hui
+                  Moments aujourd&apos;hui
                 </div>
               </div>
               
