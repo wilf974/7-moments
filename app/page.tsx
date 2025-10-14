@@ -10,8 +10,10 @@ import Link from 'next/link';
 import PrayerButton from '@/components/PrayerButton';
 import Timer from '@/components/Timer';
 import PlatformDetector from '@/components/PlatformDetector';
+import SyncNotification from '@/components/SyncNotification';
+import StorageDebug from '@/components/StorageDebug';
 import { Platform } from '@/types';
-import { getTodayCount, isTodayCompleted } from '@/lib/storage';
+import { getTodayCount, isTodayCompleted, syncStorageData } from '@/lib/storage';
 
 export default function Home() {
   const [showTimer, setShowTimer] = useState(false);
@@ -33,6 +35,8 @@ export default function Home() {
    * Effet pour mettre à jour le compteur au montage
    */
   useEffect(() => {
+    // Synchroniser les données entre cookies et localStorage au démarrage
+    syncStorageData();
     updateTodayCount();
   }, []);
 
@@ -73,6 +77,12 @@ export default function Home() {
         onPlatformDetected={handlePlatformDetected}
         showBadge={true}
       />
+
+      {/* Notification de synchronisation */}
+      <SyncNotification />
+
+      {/* Debug Storage (dev seulement) */}
+      <StorageDebug />
 
       {/* Header */}
       <header className="text-center py-8 px-4">

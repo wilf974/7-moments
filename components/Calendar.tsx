@@ -5,7 +5,7 @@
  * Montre les jours avec indicateurs visuels selon le statut
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MonthData, DayData } from '@/types';
 import { getMonthData } from '@/lib/storage';
 import { getMonthName, formatDate, isToday } from '@/lib/utils';
@@ -25,19 +25,19 @@ export default function Calendar({ className = '' }: CalendarProps) {
   /**
    * Charge les données du mois
    */
-  const loadMonthData = () => {
+  const loadMonthData = useCallback(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const data = getMonthData(year, month);
     setMonthData(data);
-  };
+  }, [currentDate]);
 
   /**
    * Effet pour charger les données au changement de mois
    */
   useEffect(() => {
     loadMonthData();
-  }, [currentDate]);
+  }, [currentDate, loadMonthData]);
 
   /**
    * Navigation vers le mois précédent
