@@ -10,7 +10,10 @@ import { parseDate } from '@/lib/utils';
 
 interface DayData {
   date: string;
-  moments: never[];
+  moments: {
+    timestamp: string;
+    label: string;
+  }[];
   completed: boolean;
   count: number;
 }
@@ -20,6 +23,39 @@ interface MonthData {
   month: number;
   days: DayData[];
 }
+
+const SAMPLE_DAY_STATUS: Record<string, Partial<DayData>> = {
+  '2025-10-07': {
+    completed: true,
+    count: 7,
+    moments: [
+      { timestamp: '2025-10-07T06:30:00', label: 'Prière du matin' },
+      { timestamp: '2025-10-07T09:00:00', label: 'Louange' },
+      { timestamp: '2025-10-07T11:30:00', label: 'Lecture biblique' },
+      { timestamp: '2025-10-07T14:00:00', label: 'Prière de midi' },
+      { timestamp: '2025-10-07T17:45:00', label: 'Méditation' },
+      { timestamp: '2025-10-07T19:15:00', label: 'Prière du soir' },
+      { timestamp: '2025-10-07T21:00:00', label: 'Gratitude' },
+    ],
+  },
+  '2025-10-14': {
+    completed: false,
+    count: 4,
+    moments: [
+      { timestamp: '2025-10-14T07:00:00', label: 'Prière du matin' },
+      { timestamp: '2025-10-14T12:15:00', label: 'Lecture biblique' },
+      { timestamp: '2025-10-14T15:40:00', label: 'Louange courte' },
+      { timestamp: '2025-10-14T20:10:00', label: 'Partage de foi' },
+    ],
+  },
+  '2025-10-10': {
+    completed: false,
+    count: 1,
+    moments: [
+      { timestamp: '2025-10-10T18:45:00', label: 'Louange' },
+    ],
+  },
+};
 
 /**
  * Génère les dates d'un mois avec les jours précédents/suivants
@@ -79,6 +115,7 @@ function isToday(date: Date): boolean {
 export default function SimpleCalendar() {
   const [currentDate] = useState(new Date(2025, 9, 14)); // 14 octobre 2025
   const [monthData, setMonthData] = useState<MonthData | null>(null);
+  const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
 
   useEffect(() => {
     const year = currentDate.getFullYear();
@@ -91,11 +128,33 @@ export default function SimpleCalendar() {
       completed: false,
       count: 0,
     }));
+
+    const enhancedDays = days.map(day => {
+      const override = SAMPLE_DAY_STATUS[day.date];
+      if (!override) return day;
+
+      return {
+        ...day,
+        ...override,
+      };
+    });
     
-    setMonthData({
+    const monthPayload: MonthData = {
       year,
       month,
-      days,
+      days: enhancedDays,
+    };
+
+    setMonthData(monthPayload);
+
+    setSelectedDay((previous) => {
+      if (previous) {
+        const updated = enhancedDays.find(day => day.date === previous.date);
+        if (updated) return updated;
+      }
+
+      const todayData = enhancedDays.find(day => day.date === formatDate(currentDate));
+      return todayData || enhancedDays[0] || null;
     });
   }, [currentDate]);
 
@@ -140,7 +199,7 @@ export default function SimpleCalendar() {
       <div className="grid grid-cols-7 gap-1 mb-4">
         {/* En-têtes des jours */}
         {['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'].map((day) => (
-          <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
+          <div key={day} className="p-2 text-center text-sm font-medium text-gray-700">
             {day}
           </div>
         ))}
@@ -151,13 +210,14 @@ export default function SimpleCalendar() {
           const dayNumber = date.getDate();
           const isCurrentDay = isToday(date);
           const isCurrentMonth = date.getMonth() === currentDate.getMonth();
+          const isSelected = selectedDay?.date === dayData.date;
           
           // Déterminer la couleur
-          let bgColor = 'bg-gray-100 text-gray-600';
+          let bgColor = 'bg-gray-100 text-gray-900';
           if (dayData.completed) {
             bgColor = 'bg-green-500 text-white';
           } else if (dayData.count > 0) {
-            bgColor = 'bg-yellow-400 text-gray-800';
+            bgColor = 'bg-orange-300 text-gray-900';
           } else if (isCurrentDay) {
             bgColor = 'bg-blue-100 text-blue-800 border-2 border-blue-300';
           }
@@ -165,15 +225,17 @@ export default function SimpleCalendar() {
           return (
             <div
               key={dayData.date}
+              onClick={() => setSelectedDay(dayData)}
               className={`
-                p-2 text-center text-sm rounded-lg transition-all duration-200
+                p-2 text-center text-sm rounded-lg transition-all duration-200 cursor-pointer
                 ${bgColor}
                 ${!isCurrentMonth ? 'opacity-40' : ''}
                 ${isCurrentDay ? 'ring-2 ring-blue-400' : ''}
+                ${isSelected ? 'shadow-lg scale-[1.02]' : ''}
               `}
             >
               <div className="flex flex-col items-center">
-                <span className={`font-medium ${!isCurrentMonth ? 'text-gray-400' : ''}`}>
+                <span className={`font-semibold ${!isCurrentMonth ? 'text-gray-500' : ''}`}>
                   {dayNumber}
                 </span>
                 {dayData.count > 0 && !dayData.completed && (
@@ -184,6 +246,49 @@ export default function SimpleCalendar() {
           );
         })}
       </div>
+
+      {/* Détails du jour sélectionné */}
+      {selectedDay && (
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Détails du {new Intl.DateTimeFormat('fr-FR', { dateStyle: 'full' }).format(parseDate(selectedDay.date))}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {selectedDay.completed
+                  ? '✅ Journée complétée (7 moments réalisés)'
+                  : selectedDay.count > 0
+                    ? `🟠 Journée en cours : ${selectedDay.count}/7 moments réalisés`
+                    : '⏳ Aucun moment enregistré pour cette journée'}
+              </p>
+            </div>
+          </div>
+
+          {selectedDay.moments.length > 0 ? (
+            <ul className="space-y-2">
+              {selectedDay.moments.map((moment, index) => (
+                <li
+                  key={`${selectedDay.date}-${index}`}
+                  className="flex items-center justify-between rounded-md bg-white px-3 py-2 shadow-sm border border-gray-200"
+                >
+                  <span className="text-sm font-medium text-gray-900">{moment.label}</span>
+                  <span className="text-sm text-gray-600">
+                    {new Intl.DateTimeFormat('fr-FR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }).format(new Date(moment.timestamp))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="rounded-md bg-white px-3 py-4 text-sm text-gray-600 border border-dashed border-gray-300">
+              Aucun moment enregistré pour l'instant. Utilisez l'application de prière pour créer vos moments.
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Debug info */}
       <div className="mt-4 p-4 bg-gray-100 rounded text-xs">
