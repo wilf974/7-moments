@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 
 interface DayData {
   date: string;
-  moments: any[];
+  moments: never[];
   completed: boolean;
   count: number;
 }
@@ -72,7 +72,7 @@ function isToday(date: Date): boolean {
  * Composant Calendar simplifié
  */
 export default function SimpleCalendar() {
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 9, 14)); // 14 octobre 2025
+  const [currentDate] = useState(new Date(2025, 9, 14)); // 14 octobre 2025
   const [monthData, setMonthData] = useState<MonthData | null>(null);
 
   useEffect(() => {
@@ -141,7 +141,7 @@ export default function SimpleCalendar() {
         ))}
         
         {/* Jours du mois */}
-        {monthData.days.map((dayData, index) => {
+        {monthData.days.map((dayData) => {
           const date = new Date(dayData.date);
           const dayNumber = date.getDate();
           const isCurrentDay = isToday(date);
