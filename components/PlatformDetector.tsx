@@ -12,6 +12,7 @@ import { savePlatformInfo, getPlatformInfo } from '@/lib/storage';
 interface PlatformDetectorProps {
   onPlatformDetected?: (platform: Platform) => void;
   showBadge?: boolean;
+  onVerseRequest?: () => void; // Nouveau callback pour demander un verset
 }
 
 /**
@@ -87,10 +88,13 @@ function getPlatformDisplayInfo(platform: Platform): { icon: string; name: strin
  */
 export default function PlatformDetector({ 
   onPlatformDetected, 
-  showBadge = true 
+  showBadge = true,
+  onVerseRequest
 }: PlatformDetectorProps) {
   const [platform, setPlatform] = useState<Platform>('unknown');
   const [isDetected, setIsDetected] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
+  const [lastClickTime, setLastClickTime] = useState(0);
 
   useEffect(() => {
     // Vérifier d'abord si on a déjà détecté la plateforme
@@ -118,6 +122,30 @@ export default function PlatformDetector({
     console.log(`Plateforme détectée: ${detectedPlatform}`);
   }, [onPlatformDetected]);
 
+  /**
+   * Gestionnaire de clic pour détecter le spam clic
+   */
+  const handleClick = () => {
+    const now = Date.now();
+    const timeDiff = now - lastClickTime;
+    
+    // Si c'est un clic rapide (moins de 500ms depuis le dernier clic)
+    if (timeDiff < 500) {
+      setClickCount(prev => prev + 1);
+      
+      // Si on a 5 clics rapides, déclencher l'affichage du verset
+      if (clickCount >= 4) { // 4 car on vient d'incrémenter
+        onVerseRequest?.();
+        setClickCount(0); // Reset le compteur
+      }
+    } else {
+      // Reset le compteur si trop de temps entre les clics
+      setClickCount(1);
+    }
+    
+    setLastClickTime(now);
+  };
+
   if (!showBadge || !isDetected) {
     return null;
   }
@@ -127,11 +155,17 @@ export default function PlatformDetector({
   return (
     <div className="fixed top-4 right-4 z-50">
       <div 
-        className={`${platformInfo.color} text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg flex items-center gap-1`}
-        title={`Plateforme détectée: ${platformInfo.name}`}
+        className={`${platformInfo.color} text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg flex items-center gap-1 cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-xl`}
+        title={`Plateforme détectée: ${platformInfo.name}${onVerseRequest ? ' • Cliquez rapidement 5 fois pour un verset' : ''}`}
+        onClick={handleClick}
       >
         <span>{platformInfo.icon}</span>
         <span>{platformInfo.name}</span>
+        {clickCount > 0 && (
+          <span className="ml-1 text-xs animate-bounce">
+            {clickCount}
+          </span>
+        )}
       </div>
     </div>
   );

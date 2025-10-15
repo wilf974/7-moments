@@ -12,14 +12,18 @@ import Timer from '@/components/Timer';
 import PlatformDetector from '@/components/PlatformDetector';
 import SyncNotification from '@/components/SyncNotification';
 import StorageDebug from '@/components/StorageDebug';
+import VerseDisplay from '@/components/VerseDisplay';
 import { Platform } from '@/types';
 import { getTodayCount, isTodayCompleted, syncStorageData } from '@/lib/storage';
+import { getRandomVerse, BibleVerse } from '@/lib/verses';
 
 export default function Home() {
   const [showTimer, setShowTimer] = useState(false);
   const [todayCount, setTodayCount] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [currentPlatform, setCurrentPlatform] = useState<Platform>('unknown');
+  const [showVerse, setShowVerse] = useState(false);
+  const [currentVerse, setCurrentVerse] = useState<BibleVerse | null>(null);
 
   /**
    * Met à jour le compteur quotidien
@@ -81,12 +85,30 @@ export default function Home() {
     setShowTimer(false);
   };
 
+  /**
+   * Gestionnaire pour afficher un verset
+   */
+  const handleVerseRequest = () => {
+    const verse = getRandomVerse();
+    setCurrentVerse(verse);
+    setShowVerse(true);
+  };
+
+  /**
+   * Gestionnaire pour fermer l'affichage du verset
+   */
+  const handleVerseClose = () => {
+    setShowVerse(false);
+    setCurrentVerse(null);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
       {/* Détecteur de plateforme */}
       <PlatformDetector 
         onPlatformDetected={handlePlatformDetected}
         showBadge={true}
+        onVerseRequest={handleVerseRequest}
       />
 
       {/* Notification de synchronisation */}
@@ -193,6 +215,15 @@ export default function Home() {
           Développé avec ❤️ pour votre cheminement spirituel
         </p>
       </footer>
+
+      {/* Affichage du verset */}
+      {showVerse && currentVerse && (
+        <VerseDisplay
+          verse={currentVerse}
+          onClose={handleVerseClose}
+          duration={30000}
+        />
+      )}
     </div>
   );
 }
