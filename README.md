@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 7 RDV/jour avec Dieu
 
-## Getting Started
+Application de prière quotidienne avec 7 moments de recueillement par jour.
 
-First, run the development server:
+## 🌐 Environnements
 
+### Production (VPS)
+- **URL** : https://7moments.woutils.com
+- **Sécurité** : HTTPS avec certificat SSL Let's Encrypt
+- **Infrastructure** : VPS Hostinger avec Nginx reverse proxy
+
+### Développement Local
+- **URL** : http://localhost:3000
+- **Usage** : Tests et développement uniquement
+- **Sécurité** : HTTP uniquement (pas de HTTPS en local)
+
+## 🚀 Démarrage Rapide
+
+### Développement Local
 ```bash
+# Installer les dépendances
+npm install
+
+# Démarrer le serveur de développement
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Déploiement VPS
+```bash
+# Se connecter au VPS
+ssh utilisateur@168.231.84.168
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Aller dans le répertoire du projet
+cd /opt/apps/7-moments
 
-## Learn More
+# Mettre à jour le code
+git pull origin main
 
-To learn more about Next.js, take a look at the following resources:
+# Redémarrer l'application
+docker compose down
+docker compose up -d --build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🏗️ Architecture
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Framework** : Next.js 15.5.5 avec React 19.1.0
+- **Styling** : Tailwind CSS v4
+- **TypeScript** : Activé
+- **Docker** : Containerisé pour le déploiement
+- **Reverse Proxy** : Nginx pour la gestion des domaines
+- **SSL** : Let's Encrypt avec renouvellement automatique
 
-## Deploy on Vercel
+## 📱 Fonctionnalités
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **7 moments de prière** par jour avec timer intégré
+- **Calendrier visuel** pour le suivi mensuel
+- **Stockage local** des données (localStorage + cookies)
+- **Détection de plateforme** (iOS, Android, Telegram, Web)
+- **Versets bibliques** aléatoires avec animations
+- **Interface responsive** et moderne
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔧 Configuration
+
+### Variables d'environnement
+Aucune variable d'environnement requise pour le fonctionnement de base.
+
+### Docker
+```bash
+# Build et démarrage
+docker compose up -d --build
+
+# Arrêt
+docker compose down
+
+# Logs
+docker compose logs -f
+```
+
+## 📝 Notes Importantes
+
+- **Tests** : Toujours effectuer les tests en local sur http://localhost:3000
+- **Production** : Déployer uniquement sur https://7moments.woutils.com
+- **Sécurité** : HTTPS obligatoire en production, HTTP uniquement en local
+- **Architecture** : Prête pour ajouter d'autres applications sur d'autres sous-domaines

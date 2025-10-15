@@ -66,7 +66,7 @@ function isToday(date: Date): boolean {
  * Composant Calendar simplifié
  */
 export default function SimpleCalendar() {
-  const [currentDate] = useState(new Date(2025, 9, 14)); // 14 octobre 2025
+  const [currentDate] = useState(new Date()); // Utiliser la date actuelle
   const [monthData, setMonthData] = useState<MonthData | null>(null);
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
   // Suppression de userStats non utilisé - les statistiques sont gérées par le composant Calendar principal
@@ -81,8 +81,10 @@ export default function SimpleCalendar() {
     
     // Les statistiques utilisateur sont gérées par le composant Calendar principal
 
-    // Sélectionner le jour d'aujourd'hui par défaut
-    const todayData = realMonthData.days.find(day => day.date === formatDate(currentDate));
+    // Sélectionner automatiquement le jour d'aujourd'hui par défaut
+    const today = new Date();
+    const todayFormatted = formatDate(today);
+    const todayData = realMonthData.days.find(day => day.date === todayFormatted);
     setSelectedDay(todayData || realMonthData.days[0] || null);
   }, [currentDate]);
 

@@ -173,3 +173,29 @@ export function getMonthDates(year: number, month: number): Date[] {
 - Tester l'environnement de développement
 - Optimiser la configuration Docker pour la production
 - Supprimer définitivement `prayer-app-OLD/` quand les fichiers ne seront plus verrouillés
+
+## 2025-01-27 - Configuration HTTPS et Déploiement VPS
+
+### Configuration DNS et Infrastructure
+- **Domaine** : woutils.com (racine) avec architecture multi-sous-domaines
+- **Sous-domaine** : 7moments.woutils.com pour l'application 7 RDV/jour avec Dieu
+- **VPS** : 168.231.84.168 (Hostinger)
+- **Reverse proxy** : Nginx configuré pour router les requêtes
+
+### Configuration HTTPS
+- **Certificat SSL** : Let's Encrypt via Certbot
+- **URL de production** : https://7moments.woutils.com (HTTPS sécurisé)
+- **Renouvellement automatique** : Configuré via Certbot
+- **Redirection** : HTTP vers HTTPS automatique
+
+### Architecture de déploiement
+- **Production** : https://7moments.woutils.com (VPS avec HTTPS)
+- **Développement local** : http://localhost:3000 (pour les tests)
+- **Docker** : Application containerisée sur le VPS
+- **Nginx** : Reverse proxy pour la gestion des domaines
+
+### Instructions importantes
+- **Tests en local** : Utiliser http://localhost:3000 pour le développement
+- **Production** : Déployer uniquement sur https://7moments.woutils.com
+- **Sécurité** : HTTPS obligatoire en production, HTTP uniquement en local
+- **Architecture** : Prête pour ajouter d'autres applications sur d'autres sous-domaines
