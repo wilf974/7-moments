@@ -53,7 +53,7 @@ export default function PrayerButton({
   /**
    * Déclenche un moment de prière
    */
-  const handlePrayerStart = async () => {
+  const handlePrayerStart = () => {
     if (isCompleted) {
       onLimitReached?.();
       return;
@@ -64,6 +64,7 @@ export default function PrayerButton({
     try {
       // Sauvegarder le moment de prière
       savePrayerMoment(platform);
+      console.log('✅ Moment de prière sauvegardé avec succès');
       
       // Mettre à jour le compteur
       updateTodayCount();
@@ -127,10 +128,10 @@ export default function PrayerButton({
     <div className={`flex flex-col items-center space-y-4 ${className}`}>
       {/* Compteur quotidien */}
       <div className="text-center">
-        <div className="text-4xl font-bold text-gray-800 mb-2">
+        <div className="text-4xl font-bold text-gray-800 mb-2 animate-count-up">
           {todayCount}/7
         </div>
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 animate-fade-in">
           Moments de prière aujourd&apos;hui
         </div>
       </div>
@@ -139,7 +140,7 @@ export default function PrayerButton({
       <div className="w-full max-w-xs">
         <div className="bg-gray-200 rounded-full h-3">
           <div
-            className={`h-3 rounded-full transition-all duration-500 ${
+            className={`h-3 rounded-full transition-all duration-1000 ease-out ${
               isCompleted ? 'bg-green-500' : 
               todayCount >= 5 ? 'bg-blue-500' : 
               todayCount >= 3 ? 'bg-indigo-500' : 
@@ -151,7 +152,7 @@ export default function PrayerButton({
       </div>
 
       {/* Message de motivation */}
-      <div className="text-center text-sm text-gray-600 max-w-md px-4">
+      <div className="text-center text-sm text-gray-600 max-w-md px-4 animate-fade-in">
         <p>{getMotivationMessage()}</p>
       </div>
 
@@ -166,6 +167,7 @@ export default function PrayerButton({
           shadow-lg hover:shadow-xl
           ${getButtonColor()}
           ${showSuccess ? 'animate-pulse' : ''}
+          ${!isCompleted && !isLoading ? 'animate-pulse-glow' : ''}
         `}
       >
         <div className="flex items-center space-x-2">

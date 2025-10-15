@@ -13,7 +13,6 @@ import PlatformDetector from '@/components/PlatformDetector';
 import SyncNotification from '@/components/SyncNotification';
 import StorageDebug from '@/components/StorageDebug';
 import { Platform } from '@/types';
-import { savePrayerMoment } from '@/lib/storage';
 import { getTodayCount, isTodayCompleted, syncStorageData } from '@/lib/storage';
 
 export default function Home() {
@@ -75,10 +74,7 @@ export default function Home() {
    * Gestionnaire pour passer au moment suivant
    */
   const handleNextMoment = () => {
-    // Enregistrer le moment de prière
-    savePrayerMoment(currentPlatform);
-    
-    // Mettre à jour le compteur
+    // Mettre à jour le compteur (le moment a déjà été sauvegardé par PrayerButton)
     updateTodayCount();
     
     // Retourner à la vue principale
@@ -101,10 +97,10 @@ export default function Home() {
 
       {/* Header */}
       <header className="text-center py-8 px-4">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-2">
-          Sept rendez-vous chaque jour avec Dieu
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-2 animate-fade-in-up">
+          7 RDV/jour <span className="text-purple-600 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">avec Dieu</span>
         </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.3s' }}>
           &ldquo;Sept fois le jour je te loue à cause de tes justes ordonnances.&rdquo; - Psaume 119, verset 164
         </p>
       </header>
@@ -113,7 +109,7 @@ export default function Home() {
       <main className="container mx-auto px-4 py-8">
         {!showTimer ? (
           /* Vue principale avec bouton de prière */
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-2xl mx-auto animate-slide-in-up" style={{ animationDelay: '0.6s' }}>
             <PrayerButton
               onPrayerStarted={handlePrayerStarted}
               onLimitReached={handleLimitReached}
@@ -122,7 +118,7 @@ export default function Home() {
 
             {/* Statistiques rapides */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="bg-white rounded-lg p-6 shadow-sm text-center">
+              <div className="bg-white rounded-lg p-6 shadow-sm text-center animate-count-up" style={{ animationDelay: '0.9s' }}>
                 <div className="text-2xl font-bold text-purple-600 mb-1">
                   {todayCount}
                 </div>
@@ -131,8 +127,8 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="bg-white rounded-lg p-6 shadow-sm text-center">
-                <div className="text-2xl font-bold text-blue-600 mb-1">
+              <div className="bg-white rounded-lg p-6 shadow-sm text-center animate-count-up" style={{ animationDelay: '1.0s' }}>
+                <div className="text-2xl font-bold text-blue-600 mb-1 animate-bounce-in">
                   {isCompleted ? '✅' : '⏳'}
                 </div>
                 <div className="text-sm text-gray-600">
@@ -140,8 +136,8 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="bg-white rounded-lg p-6 shadow-sm text-center">
-                <div className="text-2xl font-bold text-indigo-600 mb-1">
+              <div className="bg-white rounded-lg p-6 shadow-sm text-center animate-count-up" style={{ animationDelay: '1.1s' }}>
+                <div className="text-2xl font-bold text-indigo-600 mb-1 animate-bounce-in">
                   {currentPlatform === 'telegram' ? '📱' : 
                    currentPlatform === 'ios' ? '🍎' : 
                    currentPlatform === 'android' ? '🤖' : '🌐'}
@@ -153,10 +149,10 @@ export default function Home() {
             </div>
 
             {/* Navigation vers le calendrier */}
-            <div className="text-center">
+            <div className="text-center animate-fade-in" style={{ animationDelay: '1.2s' }}>
               <Link
                 href="/calendar"
-                className="inline-flex items-center px-6 py-3 bg-white text-gray-700 rounded-lg shadow-sm hover:shadow-md transition-shadow font-medium"
+                className="inline-flex items-center px-6 py-3 bg-white text-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 font-medium hover:scale-105"
               >
                 📅 Voir le calendrier
               </Link>
@@ -164,13 +160,13 @@ export default function Home() {
           </div>
         ) : (
           /* Vue timer */
-          <div className="max-w-md mx-auto">
+          <div className="max-w-md mx-auto animate-page-transition">
             <div className="bg-white rounded-2xl p-8 shadow-lg">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2 animate-fade-in-up">
                   Moment de Prière
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-gray-600 animate-fade-in" style={{ animationDelay: '0.2s' }}>
                   Prenez un moment pour vous recueillir
                 </p>
               </div>

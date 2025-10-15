@@ -119,9 +119,9 @@ export default function Timer({
   return (
     <div className={`flex flex-col items-center space-y-4 ${className}`}>
       {/* Affichage du temps */}
-      <div className="relative">
+      <div className="relative animate-fade-in-up">
         {/* Cercle de progression */}
-        <div className="w-32 h-32 relative">
+        <div className={`w-32 h-32 relative ${state === 'running' ? 'animate-timer-pulse' : ''}`}>
           <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
             {/* Cercle de fond */}
             <path
@@ -153,10 +153,10 @@ export default function Timer({
           {/* Temps au centre */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className={`text-2xl font-mono font-bold ${getStateColor()}`}>
+              <div className={`text-2xl font-mono font-bold ${getStateColor()} animate-count-up`}>
                 {formatDuration(timeLeft)}
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 mt-1 animate-fade-in">
                 {getStateIcon()} {state === 'running' ? 'En cours' : 
                  state === 'paused' ? 'En pause' : 
                  state === 'completed' ? 'Terminé' : 'Prêt'}
@@ -167,11 +167,11 @@ export default function Timer({
       </div>
 
       {/* Contrôles */}
-      <div className="flex space-x-2">
+      <div className="flex space-x-2 animate-fade-in">
         {state === 'idle' && (
           <button
             onClick={startTimer}
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300 font-medium hover:scale-105"
           >
             Démarrer
           </button>
@@ -180,7 +180,7 @@ export default function Timer({
         {state === 'running' && (
           <button
             onClick={onNext}
-            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 font-medium hover:scale-105 animate-bounce-in"
           >
             Suivant
           </button>
@@ -189,7 +189,7 @@ export default function Timer({
         {state === 'paused' && (
           <button
             onClick={onNext}
-            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 font-medium hover:scale-105"
           >
             Suivant
           </button>
@@ -198,7 +198,7 @@ export default function Timer({
         {state === 'completed' && (
           <button
             onClick={onNext}
-            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 font-medium hover:scale-105 animate-bounce-in"
           >
             Suivant
           </button>

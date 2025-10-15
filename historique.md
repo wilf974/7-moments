@@ -109,7 +109,67 @@ export function getMonthDates(year: number, month: number): Date[] {
 }
 ```
 
+## 2025-01-27 - Récupération des Modifications depuis GitHub
+
+### Action effectuée
+- **Repository source** : https://github.com/wilf974/7-moments.git
+- **Configuration remote** : Ajout de l'origine GitHub
+- **Fusion** : Récupération des 23 commits depuis la branche main
+- **Résolution de conflits** : Fusion des historiques non liés avec `--allow-unrelated-histories`
+
+### Fichiers récupérés
+- **Nouveaux composants** : SimpleCalendar, StorageDebug, StorageSync, SyncNotification
+- **Configuration** : .dockerignore, .gitignore, eslint.config.mjs
+- **Docker** : Dockerfile, Dockerfile.new, Dockerfile.old, docker-compose.yml
+- **Pages** : app/calendar/page.tsx, app/layout.tsx, app/page.tsx
+- **Assets** : public/ (icônes, manifest.json)
+- **Documentation** : README.md, TODO.md
+
+### Corrections apportées
+- **Bug du calendrier** : Correction de l'affichage des jours de la semaine
+- **Fonction getMonthDates()** : Génération correcte d'un calendrier complet (42 jours)
+- **Amélioration UX** : Distinction visuelle des jours hors mois courant
+
+### État actuel
+- **Branche** : main (synchronisée avec GitHub)
+- **Commits** : 23 commits récupérés
+- **Structure** : Projet Next.js 15.5.5 avec React 19.1.0
+- **Docker** : Configuration complète prête pour le déploiement
+
+## 2025-01-27 - Nettoyage de la Structure du Projet
+
+### Problème identifié
+- **Duplication de fichiers** : Le dossier `prayer-app/` contenait une copie complète du projet
+- **Confusion** : Deux versions des mêmes fichiers (racine vs prayer-app/)
+- **Espace disque** : Dossier `node_modules/` dupliqué inutilement
+- **Maintenance** : Risque de modifier la mauvaise version des fichiers
+
+### Solution appliquée
+- **Renommage** : `prayer-app/` → `prayer-app-OLD/` pour éviter les conflits
+- **Vérification** : Le projet principal fonctionne correctement
+- **Docker** : Application redémarrée avec succès sur le port 3000
+
+### Structure finale
+```
+7RDV/
+├── app/                    ← Projet principal (utilisé par Docker)
+├── components/             ← Composants React
+├── lib/                    ← Utilitaires et stockage
+├── types/                  ← Définitions TypeScript
+├── public/                 ← Assets statiques
+├── docker-compose.yml      ← Configuration Docker
+├── Dockerfile              ← Build Docker
+└── prayer-app-OLD/         ← Ancienne copie (à supprimer plus tard)
+```
+
+### Avantages
+- **Structure claire** : Un seul projet principal
+- **Maintenance simplifiée** : Plus de confusion sur les fichiers à modifier
+- **Espace libéré** : Suppression de la duplication
+- **Docker fonctionnel** : Application opérationnelle sur http://localhost:3000
+
 ### Prochaines étapes
 - Configurer les ports Docker selon les préférences (à partir de 10000)
 - Tester l'environnement de développement
 - Optimiser la configuration Docker pour la production
+- Supprimer définitivement `prayer-app-OLD/` quand les fichiers ne seront plus verrouillés
