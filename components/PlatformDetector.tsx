@@ -23,7 +23,7 @@ function detectPlatform(): Platform {
   }
 
   // Détection Telegram
-  if (window.Telegram?.WebApp) {
+  if ((window as unknown as { Telegram?: { WebApp?: unknown } }).Telegram?.WebApp) {
     return 'telegram';
   }
 
@@ -47,7 +47,7 @@ function detectPlatform(): Platform {
 /**
  * Obtient l'icône et le nom de la plateforme
  */
-function getPlatformInfo(platform: Platform): { icon: string; name: string; color: string } {
+function getPlatformDisplayInfo(platform: Platform): { icon: string; name: string; color: string } {
   switch (platform) {
     case 'telegram':
       return {
@@ -122,7 +122,7 @@ export default function PlatformDetector({
     return null;
   }
 
-  const platformInfo = getPlatformInfo(platform);
+  const platformInfo = getPlatformDisplayInfo(platform);
 
   return (
     <div className="fixed top-4 right-4 z-50">
@@ -158,4 +158,3 @@ export function usePlatformDetection() {
 
   return { platform, isDetected };
 }
-

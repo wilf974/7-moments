@@ -13,10 +13,34 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Formate une date au format YYYY-MM-DD
+ * Formate une date au format YYYY-MM-DD en conservant le fuseau horaire local.
  */
 export function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Convertit une chaîne YYYY-MM-DD en Date (fusion locale) sans décalage UTC.
+ */
+export function parseDate(dateString: string): Date {
+  const [yearStr, monthStr, dayStr] = dateString.split('-');
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+  const day = Number(dayStr);
+
+  if (
+    Number.isNaN(year) ||
+    Number.isNaN(month) ||
+    Number.isNaN(day)
+  ) {
+    throw new Error(`Format de date invalide: ${dateString}`);
+  }
+
+  return new Date(year, month - 1, day);
 }
 
 /**
@@ -41,15 +65,25 @@ export function getMonthEnd(date: Date): Date {
 }
 
 /**
- * Génère un tableau de dates pour un mois donné
+ * Génère un tableau de dates pour un mois donné avec les jours précédents/suivants pour remplir la grille
  */
 export function getMonthDates(year: number, month: number): Date[] {
   const dates: Date[] = [];
-  const startDate = new Date(year, month, 1);
-  const endDate = new Date(year, month + 1, 0);
   
-  for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
-    dates.push(new Date(date));
+  // Premier jour du mois
+  const firstDayOfMonth = new Date(year, month, 1);
+  
+  // Jour de la semaine du premier jour (0 = dimanche, 1 = lundi, etc.)
+  const firstDayWeekday = firstDayOfMonth.getDay();
+  
+  // Commencer au dimanche de la semaine qui contient le premier jour du mois
+  const startDate = new Date(firstDayOfMonth);
+  startDate.setDate(startDate.getDate() - firstDayWeekday);
+  
+  // Générer 42 jours (6 semaines) pour remplir complètement la grille du calendrier
+  for (let i = 0; i < 42; i++) {
+    const date = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000));
+    dates.push(date);
   }
   
   return dates;
@@ -110,4 +144,3 @@ export function isToday(date: Date): boolean {
 export function getDaysInMonth(year: number, month: number): number {
   return new Date(year, month + 1, 0).getDate();
 }
-

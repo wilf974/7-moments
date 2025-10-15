@@ -13,8 +13,7 @@ interface TimerProps {
   duration?: number; // Durée en secondes, par défaut 60
   onComplete?: () => void;
   onStart?: () => void;
-  onPause?: () => void;
-  onResume?: () => void;
+  onNext?: () => void; // Nouveau callback pour passer au moment suivant
   autoStart?: boolean;
   className?: string;
 }
@@ -26,8 +25,7 @@ export default function Timer({
   duration = 60,
   onComplete,
   onStart,
-  onPause,
-  onResume,
+  onNext,
   autoStart = false,
   className = '',
 }: TimerProps) {
@@ -58,56 +56,8 @@ export default function Timer({
     setIntervalId(id);
   }, [state, onStart, onComplete]);
 
-  /**
-   * Met en pause le timer
-   */
-  const pauseTimer = useCallback(() => {
-    if (state !== 'running') return;
-    
-    setState('paused');
-    onPause?.();
-    
-    if (intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
-    }
-  }, [state, intervalId, onPause]);
-
-  /**
-   * Reprend le timer
-   */
-  const resumeTimer = useCallback(() => {
-    if (state !== 'paused') return;
-    
-    setState('running');
-    onResume?.();
-    
-    const id = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          setState('completed');
-          onComplete?.();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    
-    setIntervalId(id);
-  }, [state, onResume, onComplete]);
-
-  /**
-   * Remet à zéro le timer
-   */
-  const resetTimer = useCallback(() => {
-    setTimeLeft(duration);
-    setState('idle');
-    
-    if (intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
-    }
-  }, [duration, intervalId]);
+  // Suppression des fonctions pauseTimer, resumeTimer et resetTimer non utilisées
+  // Le bouton "Suivant" remplace tous ces contrôles
 
   /**
    * Auto-start si demandé
@@ -229,36 +179,28 @@ export default function Timer({
         
         {state === 'running' && (
           <button
-            onClick={pauseTimer}
-            className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium"
+            onClick={onNext}
+            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
           >
-            Pause
+            Suivant
           </button>
         )}
         
         {state === 'paused' && (
-          <>
-            <button
-              onClick={resumeTimer}
-              className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
-            >
-              Reprendre
-            </button>
-            <button
-              onClick={resetTimer}
-              className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
-            >
-              Reset
-            </button>
-          </>
+          <button
+            onClick={onNext}
+            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+          >
+            Suivant
+          </button>
         )}
         
         {state === 'completed' && (
           <button
-            onClick={resetTimer}
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+            onClick={onNext}
+            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
           >
-            Recommencer
+            Suivant
           </button>
         )}
       </div>
@@ -278,4 +220,3 @@ export default function Timer({
     </div>
   );
 }
-

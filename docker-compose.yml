@@ -1,0 +1,12 @@
+# docker-compose.yml pour l'application 7 Rendez-vous de Prière
+
+services:
+  prayer-app:
+    build: .
+    container_name: prayer-app
+    ports:
+      - "3000:3000"  # Port externe 3000, port interne 3000
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped

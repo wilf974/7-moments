@@ -6,13 +6,13 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Platform } from '@/types';
+// import { Platform } from '@/types'; // Non utilisé pour l'instant
 import { savePrayerMoment, getTodayCount, isTodayCompleted } from '@/lib/storage';
 import { usePlatformDetection } from './PlatformDetector';
 
 interface PrayerButtonProps {
   onPrayerStarted?: () => void;
-  onPrayerCompleted?: () => void;
+  // onPrayerCompleted?: () => void; // Non utilisé pour l'instant
   onLimitReached?: () => void;
   className?: string;
 }
@@ -22,7 +22,7 @@ interface PrayerButtonProps {
  */
 export default function PrayerButton({
   onPrayerStarted,
-  onPrayerCompleted,
+  // onPrayerCompleted,
   onLimitReached,
   className = '',
 }: PrayerButtonProps) {
@@ -131,7 +131,7 @@ export default function PrayerButton({
           {todayCount}/7
         </div>
         <div className="text-sm text-gray-600">
-          Moments de prière aujourd'hui
+          Moments de prière aujourd&apos;hui
         </div>
       </div>
 
@@ -202,4 +202,3 @@ export default function PrayerButton({
     </div>
   );
 }
-

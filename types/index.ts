@@ -1,62 +1,30 @@
 /**
- * Types TypeScript pour l'application 7 Rendez-vous de Prière
+ * Types pour l'application 7 Rendez-vous de Prière
  */
 
-/**
- * Représente un moment de prière individuel
- */
-export type PrayerMoment = {
+export type Platform = 'ios' | 'android' | 'telegram' | 'web' | 'unknown';
+
+export type TimerState = 'idle' | 'running' | 'paused' | 'completed';
+
+export interface PrayerMoment {
   timestamp: number;
-  platform: string;
-  duration?: number; // Durée en secondes (optionnel)
-};
+  platform: Platform;
+  duration: number;
+}
 
-/**
- * Données d'un jour spécifique
- */
-export type DayData = {
-  date: string; // Format YYYY-MM-DD
+export interface DayData {
+  date: string; // YYYY-MM-DD
   moments: PrayerMoment[];
-  completed: boolean; // true si 7 moments complétés
-  count: number; // Nombre de moments (0-7)
-};
+  count: number;
+  completed: boolean;
+}
 
-/**
- * Données d'un mois complet
- */
-export type MonthData = {
+export interface MonthData {
   year: number;
-  month: number; // 0-11 (JavaScript Date format)
+  month: number;
   days: DayData[];
-};
+}
 
-/**
- * Plateforme de détection
- */
-export type Platform = 'telegram' | 'ios' | 'android' | 'web' | 'unknown';
-
-/**
- * État du timer
- */
-export type TimerState = 'idle' | 'running' | 'completed' | 'paused';
-
-/**
- * Configuration de l'application
- */
-export type AppConfig = {
-  maxMomentsPerDay: number;
-  timerDuration: number; // en secondes
-  timezone: string;
-};
-
-/**
- * Statistiques de l'utilisateur
- */
-export type UserStats = {
-  totalMoments: number;
-  currentStreak: number;
-  longestStreak: number;
-  daysCompleted: number;
-  lastActivity: string | null;
-};
-
+export interface UserStats {
+  [month: string]: MonthData; // Key is YYYY-MM
+}
