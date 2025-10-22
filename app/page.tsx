@@ -76,13 +76,16 @@ export default function Home() {
 
   /**
    * Gestionnaire pour passer au moment suivant
+   * Ajoute un délai pour laisser le temps à Android de mettre à jour l'état
    */
   const handleNextMoment = () => {
     // Mettre à jour le compteur (le moment a déjà été sauvegardé par PrayerButton)
     updateTodayCount();
     
-    // Retourner à la vue principale
-    setShowTimer(false);
+    // Ajouter un délai avant de retourner à la vue principale (correction pour Android)
+    setTimeout(() => {
+      setShowTimer(false);
+    }, 200);
   };
 
   /**

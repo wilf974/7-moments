@@ -199,3 +199,22 @@ export function getMonthDates(year: number, month: number): Date[] {
 - **Production** : Déployer uniquement sur https://7moments.woutils.com
 - **Sécurité** : HTTPS obligatoire en production, HTTP uniquement en local
 - **Architecture** : Prête pour ajouter d'autres applications sur d'autres sous-domaines
+
+## 2025-01-27 - Correction du Calendrier et Mise à Jour VPS
+
+### Correction du calendrier
+- **Problème** : Le calendrier affichait automatiquement les détails du 14 octobre au lieu du jour actuel
+- **Solution** : Modification du composant `SimpleCalendar.tsx` pour utiliser `new Date()` au lieu d'une date fixe
+- **Résultat** : Les détails du jour actuel s'affichent automatiquement sans clic manuel
+
+### Mise à jour VPS
+- **Commande de déploiement** : 
+  ```bash
+  ssh utilisateur@168.231.84.168
+  cd /opt/apps/7-moments
+  git pull origin main
+  docker compose down
+  docker compose up -d --build
+  ```
+- **URL de production** : https://7moments.woutils.com (HTTPS sécurisé)
+- **Tests** : Effectuer uniquement en local sur http://localhost:3000

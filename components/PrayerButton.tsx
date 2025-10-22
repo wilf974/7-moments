@@ -35,12 +35,17 @@ export default function PrayerButton({
 
   /**
    * Met à jour le compteur quotidien
+   * Force la mise à jour sur Android en relisant les données depuis le stockage
    */
   const updateTodayCount = () => {
-    const count = getTodayCount();
-    const completed = isTodayCompleted();
-    setTodayCount(count);
-    setIsCompleted(completed);
+    // Forcer un délai court sur Android pour laisser le temps au stockage de se mettre à jour
+    setTimeout(() => {
+      const count = getTodayCount();
+      const completed = isTodayCompleted();
+      setTodayCount(count);
+      setIsCompleted(completed);
+      console.log(`Compteur mis à jour: ${count}/7, Complété: ${completed}`);
+    }, 100);
   };
 
   /**
