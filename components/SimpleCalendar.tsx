@@ -135,7 +135,7 @@ export default function SimpleCalendar() {
         ))}
         
         {/* Jours du mois */}
-        {monthData.days.map((dayData) => {
+        {monthData.days.map((dayData, index) => {
           const date = parseDate(dayData.date);
           const dayNumber = date.getDate();
           const isCurrentDay = isToday(date);
@@ -154,7 +154,7 @@ export default function SimpleCalendar() {
           
           return (
             <div
-              key={dayData.date}
+              key={`${dayData.date}-${index}`}
               onClick={() => setSelectedDay(dayData)}
               className={`
                 p-2 text-center text-sm rounded-lg transition-all duration-200 cursor-pointer

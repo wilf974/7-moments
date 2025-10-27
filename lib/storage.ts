@@ -260,8 +260,8 @@ export function getUserStats(): {
     let daysCompleted = 0;
     let lastActivity: string | null = null;
     
-    // Analyser les 30 derniers jours
-    for (let i = 0; i < 30; i++) {
+    // Analyser les 365 derniers jours pour un compte plus exact
+    for (let i = 0; i < 365; i++) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
       const dateString = formatDate(date);
@@ -271,9 +271,19 @@ export function getUserStats(): {
       
       if (dayData.completed) {
         daysCompleted++;
-        if (i === 0 || currentStreak === i - 1) {
+        // La série actuelle commence à partir d'aujourd'hui
+        if (i === currentStreak) {
           currentStreak++;
+        } else if (currentStreak > 0) {
+          // La série s'arrête si on trouve un jour non complété
+          break;
         }
+      } else if (currentStreak === 0 && i < 10) {
+        // Si on n'a pas commencé la série, continuer à chercher
+        continue;
+      } else if (currentStreak > 0) {
+        // La série s'arrête
+        break;
       }
       
       if (dayData.count > 0 && !lastActivity) {
