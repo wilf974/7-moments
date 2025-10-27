@@ -146,7 +146,20 @@ export function getDayData(date: string): DayData {
  */
 export function getMonthData(year: number, month: number): MonthData {
   const dates = getMonthDates(year, month);
-  const days: DayData[] = dates.map(date => getDayData(formatDate(date)));
+  
+  // Créer un Map pour éliminer les doublons basés sur la date formatée
+  const uniqueDaysMap = new Map<string, DayData>();
+  
+  dates.forEach(date => {
+    const dateStr = formatDate(date);
+    // Si la date n'existe pas déjà, l'ajouter
+    if (!uniqueDaysMap.has(dateStr)) {
+      uniqueDaysMap.set(dateStr, getDayData(dateStr));
+    }
+  });
+  
+  // Convertir le Map en array, en maintenant l'ordre original des dates
+  const days = Array.from(uniqueDaysMap.values());
   
   return {
     year,

@@ -218,3 +218,27 @@ export function getMonthDates(year: number, month: number): Date[] {
   ```
 - **URL de production** : https://7moments.woutils.com (HTTPS sécurisé)
 - **Tests** : Effectuer uniquement en local sur http://localhost:3000
+
+## 2025-10-27 - Correction du Bug du Double Affichage du 26
+
+### Problèmes identifiés
+1. **Double affichage du jour 26** : Le jour 26 apparaissait deux fois (dimanche et lundi) dans le calendrier
+2. **Comptage des jours incomplets** : Les jours avec 1-6 moments restaient en orange au lieu de devenir verts après complétion
+3. **Compteur de jours complétés incorrect** : Affichait "1 jour accompli" au lieu du nombre réel
+
+### Cause racine
+- La fonction `getMonthData()` appelait `getMonthDates()` qui pouvait générer des doublons de dates
+- La logique de `currentStreak` dans `getUserStats()` était incorrecte et limitée à 30 jours
+
+### Solutions appliquées
+1. **Élimination des doublons** : Modification de `getMonthData()` pour utiliser un `Map<string, DayData>` qui élimine automatiquement les doublons basés sur la date formatée
+2. **Comptage amélioré** : Augmentation de la plage d'analyse de 30 à 365 jours et correction de la logique de `currentStreak`
+3. **Clé React unique** : Ajout de l'index à la clé pour éviter les problèmes de rendu
+
+### Fichiers modifiés
+- `lib/storage.ts` : Fonction `getMonthData()` et `getUserStats()`
+- `components/SimpleCalendar.tsx` : Clé de rendu des jours
+
+### Commits
+- `2442f8e` : Première tentative avec correction de la clé React
+- `[nouveau commit]` : Correction complète du bug du double 26 avec élimination des doublons
