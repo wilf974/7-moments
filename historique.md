@@ -242,3 +242,79 @@ export function getMonthDates(year: number, month: number): Date[] {
 ### Commits
 - `2442f8e` : Première tentative avec correction de la clé React
 - `[nouveau commit]` : Correction complète du bug du double 26 avec élimination des doublons
+
+## 2025-10-27 - Migration vers IndexedDB pour Stabilité Android
+
+### Problématique
+- Bugs de synchronisation sur Android causés par la limitation de localStorage (synchrone et bloquant)
+- localStorage a une capacité limitée (~5-10 MB) et peut être lent sur mobile
+- Besoin d'une solution asynchrone et robuste pour Android
+
+### Solution : Migration IndexedDB
+IndexedDB offre :
+- ✅ API asynchrone (non-bloquante) - idéale pour mobile
+- ✅ Capacité 50 MB - plusieurs GB
+- ✅ Transactions ACID pour données cohérentes
+- ✅ Meilleures performances sur Android
+- ✅ Fallback localStorage pour compatibilité navigateurs anciens
+
+### Implémentation
+
+#### Nouvelles dépendances
+- `idb-keyval` (v6.2.4+) : Wrapper simple et robuste pour IndexedDB
+
+#### Nouveaux fichiers
+1. **`lib/indexedDBStorage.ts`** (105 lignes)
+   - `getFromIndexedDB<T>(key, defaultValue)` : Lecture asynchrone
+   - `setInIndexedDB<T>(key, value)` : Écriture asynchrone
+   - `deleteFromIndexedDB(key)` : Suppression
+   - `migrateFromLocalStorage()` : Migration automatique localStorage → IndexedDB
+
+2. **`lib/storageAdapter.ts`** (120 lignes)
+   - Abstraction hybride IndexedDB + localStorage
+   - `initializeStorage()` : Initialisation avec migration automatique
+   - `getFromStorage<T>(key, defaultValue)` : Lecture prioritaire IndexedDB
+   - `saveToStorage<T>(key, value)` : Écriture dans les deux (localStorage prioritaire, IndexedDB async)
+   - Fallback synchrone pour compatibilité : `getFromStorageSync()`, `saveToStorageSync()`
+
+3. **`components/StorageInit.tsx`** (25 lignes)
+   - Composant client pour initialisation au démarrage
+   - Appelé une seule fois via `useEffect`
+
+#### Modifications existantes
+- **`app/layout.tsx`** : Ajout de `<StorageInit />` pour initialiser IndexedDB dès le chargement
+
+### Architecture du Stockage
+
+```
+┌─────────────────────────────┐
+│   Application (storage.ts)   │
+└──────────────┬──────────────┘
+               │
+        ┌──────▼───────┐
+        │ storageAdapter│ (Abstraction hybride)
+        └──────┬────────┘
+               │
+       ┌───────┴────────┐
+       │                │
+  ┌────▼─────┐    ┌────▼──────────────┐
+  │localStorage│   │ indexedDBStorage │ (idb-keyval)
+  │(sync)      │   │ (async)          │
+  └────────────┘   └──────────────────┘
+       
+       Priorité: IndexedDB (Android) → Fallback localStorage (compat)
+```
+
+### Avantages
+1. **Android** : Utilise IndexedDB asynchrone, évite les blocages
+2. **iOS** : Préfère IndexedDB mais fallback localStorage
+3. **Compatibilité** : localStorage reste le fallback
+4. **Performance** : Écriture immédiate localStorage, persistance IndexedDB en arrière-plan
+5. **Migration** : Automatique une seule fois au premier démarrage
+
+### Prochaines étapes (optionnel)
+- Remplacer les appels synchrones `setCookie()`/`localStorage` dans `lib/storage.ts` par `saveToStorage()` asynchrone
+- Actuellement maintenu en rétrocompatibilité pour ne pas tout casser
+
+### Commits
+- `[Migration IndexedDB]` : Ajout de la couche de stockage robuste avec idb-keyval
