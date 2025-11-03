@@ -90,18 +90,18 @@ export function savePrayerMoment(platform: Platform): void {
  */
 export function getAllStoredData(): StoredData {
   try {
-    // Essayer d'abord les cookies
-    const cookieData = getCookie(STORAGE_KEYS.PRAYER_DATA);
-    if (cookieData && typeof cookieData === 'string') {
-      return JSON.parse(cookieData) as StoredData;
-    }
-    
-    // Fallback localStorage
+    // Privilégier localStorage (plus à jour sur mobile)
     if (typeof window !== 'undefined') {
       const localData = localStorage.getItem(STORAGE_KEYS.PRAYER_DATA);
       if (localData) {
         return JSON.parse(localData) as StoredData;
       }
+    }
+    
+    // Fallback cookies seulement si localStorage est vide
+    const cookieData = getCookie(STORAGE_KEYS.PRAYER_DATA);
+    if (cookieData && typeof cookieData === 'string') {
+      return JSON.parse(cookieData) as StoredData;
     }
     
     return {};
@@ -118,6 +118,13 @@ export function getDayData(date: string): DayData {
   try {
     const allData = getAllStoredData();
     const dayData = allData[date];
+    
+    // Log pour debug
+    console.log(`📅 getDayData(${date}):`, {
+      found: !!dayData,
+      storedDates: Object.keys(allData),
+      count: dayData?.count || 0
+    });
     
     if (dayData) {
       return dayData;
@@ -174,6 +181,7 @@ export function getMonthData(year: number, month: number): MonthData {
 export function getTodayCount(): number {
   const today = getTodayString();
   const dayData = getDayData(today);
+  console.log(`⏰ getTodayCount: today="${today}", count=${dayData.count}`);
   return dayData.count;
 }
 
@@ -183,6 +191,7 @@ export function getTodayCount(): number {
 export function isTodayCompleted(): boolean {
   const today = getTodayString();
   const dayData = getDayData(today);
+  console.log(`✅ isTodayCompleted: today="${today}", completed=${dayData.completed}`);
   return dayData.completed;
 }
 
