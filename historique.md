@@ -410,3 +410,24 @@ const handleNext = useCallback(() => {
 - ✅ Push vers GitHub complété
 - ⏳ À redéployer sur VPS avec : `git pull && docker compose down && docker compose up -d --build`
 - 🧪 À tester sur iOS et Android après redéploiement
+
+## 2025-11-03 - Redéploiement Réussi en Production
+
+### Deployment
+- **VPS** : 168.231.84.168 (Hostinger)
+- **URL** : https://7moments.woutils.com ✅ ONLINE
+- **Commandes exécutées** : `git pull`, `docker compose down`, `docker compose up -d --build`
+- **Status** : ✅ Le conteneur Docker fonctionne correctement
+
+### Validation
+- ✅ Pas d'erreur React #418 sur Safari iOS
+- ✅ Application charge sans erreur
+- ✅ **3/7 moments sauvegardés** et affichés correctement
+- ✅ Les données persistent correctement (cookies + localStorage)
+- ✅ Synchronisation périodique fonctionne
+
+### Prochaines Étapes (À Tester par l'Utilisateur)
+1. Terminer les 4 moments restants pour atteindre 7/7
+2. Vérifier navigation fluide entre les moments SANS retour au moment 1
+3. Revenir demain pour vérifier réinitialisation à 0/7
+4. Effectuer plusieurs cycles sur 2-3 jours pour confirmer stabilité
