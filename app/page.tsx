@@ -45,6 +45,31 @@ export default function Home() {
   }, []);
 
   /**
+   * Effet pour mettre à jour le compteur quand le timer se ferme
+   */
+  useEffect(() => {
+    if (!showTimer) {
+      // Délai court pour laisser le stockage se mettre à jour
+      setTimeout(() => {
+        updateTodayCount();
+      }, 150);
+    }
+  }, [showTimer]);
+
+  /**
+   * Effet pour détecter le changement de jour
+   * Vérifie toutes les heures si le jour a changé
+   */
+  useEffect(() => {
+    const interval = setInterval(() => {
+      updateTodayCount();
+      console.log('🔄 Vérification du jour - mise à jour du compteur');
+    }, 60 * 60 * 1000); // 1 heure
+
+    return () => clearInterval(interval);
+  }, []);
+
+  /**
    * Gestionnaire de démarrage d'un moment de prière
    */
   const handlePrayerStarted = () => {
@@ -76,16 +101,25 @@ export default function Home() {
 
   /**
    * Gestionnaire pour passer au moment suivant
-   * Ajoute un délai pour laisser le temps à Android de mettre à jour l'état
+   * Arrête le timer et remet à jour le compteur
    */
   const handleNextMoment = () => {
+    console.log('🔵 handleNextMoment appelé');
+    
     // Arrêter immédiatement le timer
     setShowTimer(false);
+    console.log('⏹️ Timer fermé');
     
     // Mettre à jour le compteur après un court délai pour que le timer soit bien fermé
     setTimeout(() => {
+      console.log('📊 Mise à jour du compteur après fermeture du timer');
       updateTodayCount();
-    }, 100);
+      
+      // Vérifier les données stockées
+      const count = getTodayCount();
+      const completed = isTodayCompleted();
+      console.log(`✅ Compteur après mise à jour: ${count}/7, Complété: ${completed}`);
+    }, 150);
   };
 
   /**

@@ -42,9 +42,14 @@ export default function PrayerButton({
     setTimeout(() => {
       const count = getTodayCount();
       const completed = isTodayCompleted();
+      
+      // Logs pour debug
+      const wasCompleted = isCompleted;
+      const wasCount = todayCount;
+      console.log(`🔄 PrayerButton.updateTodayCount: ${wasCount}/7 → ${count}/7 | complété: ${wasCompleted} → ${completed}`);
+      
       setTodayCount(count);
       setIsCompleted(completed);
-      console.log(`Compteur mis à jour: ${count}/7, Complété: ${completed}`);
     }, 100);
   };
 
@@ -53,6 +58,19 @@ export default function PrayerButton({
    */
   useEffect(() => {
     updateTodayCount();
+  }, []);
+
+  /**
+   * Effet pour détecter le changement de jour
+   * Réinitialise le state quand minuit passe
+   */
+  useEffect(() => {
+    // Vérifier toutes les heures si le jour a changé
+    const interval = setInterval(() => {
+      updateTodayCount();
+    }, 60 * 60 * 1000); // 1 heure
+
+    return () => clearInterval(interval);
   }, []);
 
   /**
