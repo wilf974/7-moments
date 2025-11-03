@@ -365,3 +365,48 @@ const handleNext = useCallback(() => {
 - Pas de retour au moment précédent après quelques jours
 - État du timer toujours propre et réinitialisé
 - Meilleure stabilité sur tous les appareils (iOS, Android, Web, Telegram)
+
+## 2025-11-03 - Corrections Additionnelles pour React #418 et Dépendances
+
+### Problème identifié (iteration 2)
+- **Erreur React #418** : Erreur minifiée concernant une prop `text` invalide
+- **Root cause** : Dépendances manquantes dans les `useEffect` causant des rendus infinis
+- **Secondaire** : La fonction `updateTodayCount` n'était pas stable (recréée à chaque rendu)
+
+### Solutions appliquées
+
+1. **Stabiliser `updateTodayCount` avec `useCallback`**
+   - Rendre la fonction stable pour éviter les cascades de rendus
+   - Ajouter aux dépendances des effects correctement
+   - Garantir qu'elle n'est créée qu'une seule fois
+
+2. **Corriger les tableaux de dépendances**
+   - `useEffect(() => { updateTodayCount() }, [updateTodayCount])`
+   - `useEffect(() => { ... }, [showTimer, updateTodayCount])`
+   - Éviter les rendus infinis causés par des dépendances manquantes
+
+3. **Ajouter détection du changement de jour**
+   - Vérifier toutes les heures si le jour a changé
+   - Réinitialiser le state `isCompleted` automatiquement après minuit
+   - Résout le bug de "7 jours après, impossible de continuer"
+
+4. **Simplifier la gestion des timers**
+   - Enlever les cleanup functions inutiles
+   - Garder les setTimeout simples sans retour de cleanup
+   - Pattern plus clair et plus maintenable
+
+### Fichiers modifiés
+- `app/page.tsx` : useCallback + dépendances corrigées + détection jour
+- `components/PrayerButton.tsx` : useCallback + dépendances corrigées + détection jour
+- `components/Timer.tsx` : Gestion explicite du clear d'intervalle dans handleNext
+
+### Commits associés
+- `ef0a8ae` : Correction du bug de navigation (handleNext + clear intervalle)
+- `cb8632f` : Détection du changement de jour et logging debug
+- `6325e3d` : Corriger les dépendances et stabiliser les callbacks
+- `b607b7c` : Simplifier updateTodayCount (enlever cleanup confus)
+
+### État de production
+- ✅ Push vers GitHub complété
+- ⏳ À redéployer sur VPS avec : `git pull && docker compose down && docker compose up -d --build`
+- 🧪 À tester sur iOS et Android après redéploiement
