@@ -318,3 +318,50 @@ IndexedDB offre :
 
 ### Commits
 - `[Migration IndexedDB]` : Ajout de la couche de stockage robuste avec idb-keyval
+
+## 2025-11-03 - Correction du Bug de Navigation entre les Moments
+
+### Problème identifié
+- **Bug rapporté** : Après quelques jours d'utilisation, impossible de passer du moment 1 au moment 2
+- **Comportement** : Une fois le moment 1 terminé, l'application revient au moment 1 au lieu de passer au suivant
+- **Cause racine** : L'intervalle du timer n'était pas complètement clear avant de passer au moment suivant
+- **Impact sur Android** : Accumulation d'intervalles après plusieurs cycles, causant des états mélangés
+
+### Solution appliquée
+1. **Nouveau `handleNext()` dans `Timer.tsx`** :
+   - Clear explicite de l'intervalle avant la transition
+   - Réinitialisation complète de l'état du timer (`state='idle'`, `timeLeft=duration`)
+   - Utilisation de `useCallback` pour éviter les créations inutiles
+   - Remplacement de tous les `onClick={onNext}` par `onClick={handleNext}`
+
+2. **Amélioration de `handleNextMoment()` dans `app/page.tsx`** :
+   - Arrêt immédiat du timer avec `setShowTimer(false)`
+   - Mise à jour du compteur après un court délai pour synchronisation complète
+   - Ordre des opérations inversé pour meilleure réactivité
+
+### Fichiers modifiés
+- `components/Timer.tsx` : Nouvelle fonction `handleNext()` avec gestion d'intervalle
+- `app/page.tsx` : Amélioration du `handleNextMoment()` avec synchronisation
+
+### Logique du Fix
+```typescript
+// Avant: L'intervalle pouvait rester actif
+onClick={onNext}  // Appelait directement le callback parent
+
+// Après: L'intervalle est explicitement arrêté ET l'état est réinitialisé
+const handleNext = useCallback(() => {
+  if (intervalId) {
+    clearInterval(intervalId);
+    setIntervalId(null);
+  }
+  setState('idle');
+  setTimeLeft(duration);
+  onNext?.();
+}, [intervalId, duration, onNext]);
+```
+
+### Résultat attendu
+- Navigation fluide entre les 7 moments
+- Pas de retour au moment précédent après quelques jours
+- État du timer toujours propre et réinitialisé
+- Meilleure stabilité sur tous les appareils (iOS, Android, Web, Telegram)

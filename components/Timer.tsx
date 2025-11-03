@@ -56,6 +56,25 @@ export default function Timer({
     setIntervalId(id);
   }, [state, onStart, onComplete]);
 
+  /**
+   * Passe au moment suivant
+   * Arrête l'intervalle complètement et réinitialise l'état
+   */
+  const handleNext = useCallback(() => {
+    // Arrêter l'intervalle immédiatement
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+    
+    // Réinitialiser complètement l'état du timer
+    setState('idle');
+    setTimeLeft(duration);
+    
+    // Appeler le callback du parent
+    onNext?.();
+  }, [intervalId, duration, onNext]);
+
   // Suppression des fonctions pauseTimer, resumeTimer et resetTimer non utilisées
   // Le bouton "Suivant" remplace tous ces contrôles
 
@@ -179,7 +198,7 @@ export default function Timer({
         
         {state === 'running' && (
           <button
-            onClick={onNext}
+            onClick={handleNext}
             className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 font-medium hover:scale-105 animate-bounce-in"
           >
             Suivant
@@ -188,7 +207,7 @@ export default function Timer({
         
         {state === 'paused' && (
           <button
-            onClick={onNext}
+            onClick={handleNext}
             className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 font-medium hover:scale-105"
           >
             Suivant
@@ -197,7 +216,7 @@ export default function Timer({
         
         {state === 'completed' && (
           <button
-            onClick={onNext}
+            onClick={handleNext}
             className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 font-medium hover:scale-105 animate-bounce-in"
           >
             Suivant
