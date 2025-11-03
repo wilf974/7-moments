@@ -50,10 +50,9 @@ export default function Home() {
   useEffect(() => {
     if (!showTimer) {
       // Délai court pour laisser le stockage se mettre à jour
-      const timer = setTimeout(() => {
+      setTimeout(() => {
         updateTodayCount();
       }, 150);
-      return () => clearTimeout(timer);
     }
   }, [showTimer, updateTodayCount]);
 

@@ -39,7 +39,7 @@ export default function PrayerButton({
    */
   const updateTodayCount = useCallback(() => {
     // Forcer un délai court sur Android pour laisser le temps au stockage de se mettre à jour
-    const timer = setTimeout(() => {
+    setTimeout(() => {
       const count = getTodayCount();
       const completed = isTodayCompleted();
       
@@ -49,16 +49,13 @@ export default function PrayerButton({
       setTodayCount(count);
       setIsCompleted(completed);
     }, 100);
-    
-    return () => clearTimeout(timer);
   }, []);
 
   /**
    * Effet pour mettre à jour le compteur au montage
    */
   useEffect(() => {
-    const cleanup = updateTodayCount();
-    return cleanup;
+    updateTodayCount();
   }, [updateTodayCount]);
 
   /**
