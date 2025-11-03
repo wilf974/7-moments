@@ -5,7 +5,7 @@
  * Gère la logique de déclenchement et les limites quotidiennes
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 // import { Platform } from '@/types'; // Non utilisé pour l'instant
 import { savePrayerMoment, getTodayCount, isTodayCompleted } from '@/lib/storage';
 import { usePlatformDetection } from './PlatformDetector';
@@ -34,31 +34,32 @@ export default function PrayerButton({
   const { platform } = usePlatformDetection();
 
   /**
-   * Met à jour le compteur quotidien
+   * Met à jour le compteur quotidien (version stable avec useCallback)
    * Force la mise à jour sur Android en relisant les données depuis le stockage
    */
-  const updateTodayCount = () => {
+  const updateTodayCount = useCallback(() => {
     // Forcer un délai court sur Android pour laisser le temps au stockage de se mettre à jour
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       const count = getTodayCount();
       const completed = isTodayCompleted();
       
       // Logs pour debug
-      const wasCompleted = isCompleted;
-      const wasCount = todayCount;
-      console.log(`🔄 PrayerButton.updateTodayCount: ${wasCount}/7 → ${count}/7 | complété: ${wasCompleted} → ${completed}`);
+      console.log(`🔄 PrayerButton.updateTodayCount: ${count}/7 | complété: ${completed}`);
       
       setTodayCount(count);
       setIsCompleted(completed);
     }, 100);
-  };
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   /**
    * Effet pour mettre à jour le compteur au montage
    */
   useEffect(() => {
-    updateTodayCount();
-  }, []);
+    const cleanup = updateTodayCount();
+    return cleanup;
+  }, [updateTodayCount]);
 
   /**
    * Effet pour détecter le changement de jour
@@ -71,7 +72,7 @@ export default function PrayerButton({
     }, 60 * 60 * 1000); // 1 heure
 
     return () => clearInterval(interval);
-  }, []);
+  }, [updateTodayCount]);
 
   /**
    * Déclenche un moment de prière

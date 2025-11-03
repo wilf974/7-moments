@@ -5,7 +5,7 @@
  * Assemble tous les composants principaux
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import PrayerButton from '@/components/PrayerButton';
 import Timer from '@/components/Timer';
@@ -26,14 +26,14 @@ export default function Home() {
   const [currentVerse, setCurrentVerse] = useState<BibleVerse | null>(null);
 
   /**
-   * Met à jour le compteur quotidien
+   * Met à jour le compteur quotidien (version stable avec useCallback)
    */
-  const updateTodayCount = () => {
+  const updateTodayCount = useCallback(() => {
     const count = getTodayCount();
     const completed = isTodayCompleted();
     setTodayCount(count);
     setIsCompleted(completed);
-  };
+  }, []);
 
   /**
    * Effet pour mettre à jour le compteur au montage
@@ -42,7 +42,7 @@ export default function Home() {
     // Synchroniser les données entre cookies et localStorage au démarrage
     syncStorageData();
     updateTodayCount();
-  }, []);
+  }, [updateTodayCount]);
 
   /**
    * Effet pour mettre à jour le compteur quand le timer se ferme
@@ -50,11 +50,12 @@ export default function Home() {
   useEffect(() => {
     if (!showTimer) {
       // Délai court pour laisser le stockage se mettre à jour
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         updateTodayCount();
       }, 150);
+      return () => clearTimeout(timer);
     }
-  }, [showTimer]);
+  }, [showTimer, updateTodayCount]);
 
   /**
    * Effet pour détecter le changement de jour
@@ -67,7 +68,7 @@ export default function Home() {
     }, 60 * 60 * 1000); // 1 heure
 
     return () => clearInterval(interval);
-  }, []);
+  }, [updateTodayCount]);
 
   /**
    * Gestionnaire de démarrage d'un moment de prière
