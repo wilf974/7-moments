@@ -1,10 +1,9 @@
 /**
  * Système de stockage local pour l'application 7 Rendez-vous de Prière
- * Utilise cookies-next et localStorage comme fallback
+ * Utilise uniquement localStorage (plus fiable et simple sur mobile)
  * Gère plusieurs jours pour la synchronisation entre plateformes
  */
 
-import { getCookie, setCookie, deleteCookie } from 'cookies-next';
 import { PrayerMoment, DayData, MonthData, Platform } from '@/types';
 import { formatDate, getTodayString, getMonthDates } from './utils';
 
@@ -66,15 +65,7 @@ export function savePrayerMoment(platform: Platform): void {
     // Mettre à jour toutes les données
     allData[today] = dayData;
     
-    // Sauvegarder dans les cookies
-    setCookie(STORAGE_KEYS.PRAYER_DATA, JSON.stringify(allData), {
-      expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 an
-      path: '/',
-      secure: false, // Permettre HTTP pour Telegram et développement
-      sameSite: 'lax',
-    });
-    
-    // Fallback localStorage
+    // Sauvegarder UNIQUEMENT dans localStorage
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.PRAYER_DATA, JSON.stringify(allData));
     }
@@ -86,22 +77,15 @@ export function savePrayerMoment(platform: Platform): void {
 }
 
 /**
- * Récupère toutes les données stockées
+ * Récupère toutes les données stockées depuis localStorage
  */
 export function getAllStoredData(): StoredData {
   try {
-    // Privilégier localStorage (plus à jour sur mobile)
     if (typeof window !== 'undefined') {
       const localData = localStorage.getItem(STORAGE_KEYS.PRAYER_DATA);
       if (localData) {
         return JSON.parse(localData) as StoredData;
       }
-    }
-    
-    // Fallback cookies seulement si localStorage est vide
-    const cookieData = getCookie(STORAGE_KEYS.PRAYER_DATA);
-    if (cookieData && typeof cookieData === 'string') {
-      return JSON.parse(cookieData) as StoredData;
     }
     
     return {};
@@ -206,13 +190,6 @@ export function savePlatformInfo(platform: Platform): void {
       userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : '',
     };
     
-    setCookie(STORAGE_KEYS.PLATFORM_INFO, JSON.stringify(platformData), {
-      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 jours
-      path: '/',
-      secure: false, // Permettre HTTP pour Telegram et développement
-      sameSite: 'lax',
-    });
-    
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.PLATFORM_INFO, JSON.stringify(platformData));
     }
@@ -226,11 +203,6 @@ export function savePlatformInfo(platform: Platform): void {
  */
 export function getPlatformInfo(): { platform: Platform; detectedAt: number } | null {
   try {
-    const cookieData = getCookie(STORAGE_KEYS.PLATFORM_INFO);
-    if (cookieData && typeof cookieData === 'string') {
-      return JSON.parse(cookieData);
-    }
-    
     if (typeof window !== 'undefined') {
       const localData = localStorage.getItem(STORAGE_KEYS.PLATFORM_INFO);
       if (localData) {
@@ -250,15 +222,9 @@ export function getPlatformInfo(): { platform: Platform; detectedAt: number } | 
  */
 export function clearAllData(): void {
   try {
-    deleteCookie(STORAGE_KEYS.PRAYER_DATA);
-    deleteCookie(STORAGE_KEYS.PLATFORM_INFO);
-    deleteCookie(STORAGE_KEYS.APP_CONFIG);
-    
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEYS.PRAYER_DATA);
-      localStorage.removeItem(STORAGE_KEYS.PLATFORM_INFO);
-      localStorage.removeItem(STORAGE_KEYS.APP_CONFIG);
-    }
+    localStorage.removeItem(STORAGE_KEYS.PRAYER_DATA);
+    localStorage.removeItem(STORAGE_KEYS.PLATFORM_INFO);
+    localStorage.removeItem(STORAGE_KEYS.APP_CONFIG);
     
     console.log('Toutes les données ont été effacées');
   } catch (error) {
@@ -331,76 +297,24 @@ export function getUserStats(): {
 }
 
 /**
- * Synchronise les données entre cookies et localStorage
+ * Synchronise les données entre localStorage
  * Utile pour s'assurer que les données sont cohérentes
  */
 export function syncStorageData(): void {
   try {
-    const cookieData = getCookie(STORAGE_KEYS.PRAYER_DATA);
     const localData = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.PRAYER_DATA) : null;
     
-    // Vérifier que cookieData est une string
-    const cookieDataString = typeof cookieData === 'string' ? cookieData : null;
+    // Vérifier que localData est une string
+    const localDataString = typeof localData === 'string' ? localData : null;
     
     console.log('🔄 Synchronisation des données:', {
-      hasCookie: !!cookieDataString,
-      hasLocal: !!localData,
-      cookieLength: cookieDataString?.length || 0,
-      localLength: localData?.length || 0
+      hasLocal: !!localDataString,
+      localLength: localDataString?.length || 0
     });
     
-    if (cookieDataString && localData) {
-      // Les deux existent, vérifier s'ils sont identiques
-      if (cookieDataString !== localData) {
-        console.log('📱 Synchronisation: fusion des données entre cookies et localStorage');
-        
-        try {
-          const cookieObj = JSON.parse(cookieDataString);
-          const localObj = JSON.parse(localData);
-          
-          // Fusionner les données (privilégier les plus récentes)
-          const mergedData = { ...localObj, ...cookieObj };
-          
-          // Mettre à jour les deux stockages
-          const mergedString = JSON.stringify(mergedData);
-          
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(STORAGE_KEYS.PRAYER_DATA, mergedString);
-          }
-          
-          setCookie(STORAGE_KEYS.PRAYER_DATA, mergedString, {
-            expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-            path: '/',
-            secure: false,
-            sameSite: 'lax',
-          });
-          
-          console.log('✅ Données fusionnées avec succès');
-        } catch (parseError) {
-          console.error('Erreur lors du parsing des données:', parseError);
-          // En cas d'erreur, privilégier les cookies
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(STORAGE_KEYS.PRAYER_DATA, cookieDataString);
-          }
-        }
-      } else {
-        console.log('✅ Données déjà synchronisées');
-      }
-    } else if (cookieDataString && !localData) {
-      // Seuls les cookies existent, copier vers localStorage
-      console.log('📱 Synchronisation: copie des cookies vers localStorage');
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(STORAGE_KEYS.PRAYER_DATA, cookieDataString);
-      }
-    } else if (!cookieDataString && localData) {
-      // Seul localStorage existe, copier vers cookies
-      console.log('📱 Synchronisation: copie du localStorage vers cookies');
-      setCookie(STORAGE_KEYS.PRAYER_DATA, localData, {
-        expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-        path: '/',
-        secure: false,
-        sameSite: 'lax',
-      });
+    if (localDataString) {
+      // Seul localStorage existe, pas de fusion à faire
+      console.log('✅ Données déjà synchronisées');
     } else {
       console.log('ℹ️ Aucune donnée à synchroniser');
     }
