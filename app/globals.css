@@ -1,31 +1,54 @@
 @import "tailwindcss";
 
+/* ===== Chapelle Doree Color Palette ===== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Couleurs principales */
+  --background: #FFFBEB; /* Crème parchemin */
+  --foreground: #78350F; /* Brun chaud */
+  --background-dark: #1C1208; /* Brun profond */
+
+  /* Accents */
+  --amber-primary: #D97706; /* Ambre */
+  --amber-gold: #F59E0B; /* Or */
+  --text-secondary: #92400E; /* Brun moyen */
+  --success: #FBBF24; /* Or lumineux */
+  --border: #FDE68A; /* Or pâle */
+  --accent-red: #7F1D1D; /* Bordeaux */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-heading: var(--font-playfair), serif;
+  --font-body: var(--font-inter), sans-serif;
+  --font-sans: var(--font-inter), sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Ajout des couleurs dans le thème */
+  --color-amber-primary: var(--amber-primary);
+  --color-amber-gold: var(--amber-gold);
+  --color-text-secondary: var(--text-secondary);
+  --color-success: var(--success);
+  --color-border: var(--border);
+  --color-accent-red: var(--accent-red);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1C1208; /* Brun profond */
+    --foreground: #FFFBEB; /* Crème parchemin */
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
 }
 
-/* Animations personnalisées */
+/* ===== Animations existantes (mises à jour avec les couleurs) ===== */
+
+/* Animation fade-in */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -89,18 +112,18 @@ body {
   animation: slide-in-up 0.6s ease-out;
 }
 
-/* Animation pour les boutons */
+/* Animation pour les boutons - mise à jour avec couleurs ambre/or */
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 5px rgba(147, 51, 234, 0.3);
+    box-shadow: 0 0 5px rgba(217, 119, 6, 0.3);
   }
   50% {
-    box-shadow: 0 0 20px rgba(147, 51, 234, 0.6);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
   }
 }
 
 .animate-pulse-glow {
-  box-shadow: 0 0 5px rgba(147, 51, 234, 0.3);
+  box-shadow: 0 0 5px rgba(217, 119, 6, 0.3);
 }
 .animate-pulse-glow:hover,
 .animate-pulse-glow:focus {
@@ -173,7 +196,68 @@ body {
   animation: page-transition 0.4s ease-out;
 }
 
-/* Désactiver les animations si l'utilisateur préfère */
+/* ===== Nouvelles animations Chapelle Dorée ===== */
+
+/* Animation candle-flicker - mouvement subtil de flamme */
+@keyframes candle-flicker {
+  0%, 100% {
+    transform: translateX(0) scaleY(1);
+    opacity: 1;
+  }
+  25% {
+    transform: translateX(-1px) scaleY(0.98);
+    opacity: 0.95;
+  }
+  50% {
+    transform: translateX(1px) scaleY(1.02);
+    opacity: 1;
+  }
+  75% {
+    transform: translateX(-0.5px) scaleY(0.99);
+    opacity: 0.97;
+  }
+}
+
+.animate-candle-flicker {
+  animation: candle-flicker 3s ease-in-out infinite;
+}
+
+/* Animation glow-pulse - pulsation de lueur dorée */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.3),
+                0 0 20px rgba(217, 119, 6, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.6),
+                0 0 40px rgba(217, 119, 6, 0.4),
+                0 0 60px rgba(251, 191, 36, 0.2);
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2.5s ease-in-out infinite;
+}
+
+/* Animation warm-fade-in - apparition avec chaleur */
+@keyframes warm-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+    filter: brightness(1.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.animate-warm-fade-in {
+  animation: warm-fade-in 0.6s ease-out;
+}
+
+/* ===== Désactiver les animations si l'utilisateur préfère ===== */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
   .animate-fade-in-up,
@@ -183,7 +267,10 @@ body {
   .animate-count-up,
   .animate-timer-pulse,
   .animate-bounce-in,
-  .animate-page-transition {
+  .animate-page-transition,
+  .animate-candle-flicker,
+  .animate-glow-pulse,
+  .animate-warm-fade-in {
     animation: none !important;
   }
 }

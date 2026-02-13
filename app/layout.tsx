@@ -1,12 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import StorageSync from "@/components/StorageSync";
 import StorageInit from "@/components/StorageInit";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -21,14 +28,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://prayer.yourdomain.com'),
+  metadataBase: new URL('https://7moments.woutils.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: "7 Rendez-vous de Prière",
     description: "Application pour suivre vos 7 moments de prière quotidiens",
-    url: 'https://prayer.yourdomain.com',
+    url: 'https://7moments.woutils.com',
     siteName: '7 Rendez-vous de Prière',
     images: [
       {
@@ -77,8 +84,8 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#8b5cf6' },
-    { media: '(prefers-color-scheme: dark)', color: '#7c3aed' },
+    { media: '(prefers-color-scheme: light)', color: '#D97706' },
+    { media: '(prefers-color-scheme: dark)', color: '#92400E' },
   ],
 };
 
@@ -99,7 +106,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
       </head>
       <body
-        className={`${geistSans.variable} antialiased`}
+        className={`${playfair.variable} ${inter.variable} antialiased`}
       >
         <StorageSync />
         <StorageInit />
