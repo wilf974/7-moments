@@ -9,7 +9,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -100,6 +100,10 @@ body {
 }
 
 .animate-pulse-glow {
+  box-shadow: 0 0 5px rgba(147, 51, 234, 0.3);
+}
+.animate-pulse-glow:hover,
+.animate-pulse-glow:focus {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
@@ -130,7 +134,7 @@ body {
 }
 
 .animate-timer-pulse {
-  animation: timer-pulse 1s ease-in-out infinite;
+  animation: timer-pulse 1s ease-in-out 3;
 }
 
 /* Animation pour les icônes */
@@ -167,4 +171,19 @@ body {
 
 .animate-page-transition {
   animation: page-transition 0.4s ease-out;
+}
+
+/* Désactiver les animations si l'utilisateur préfère */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-fade-in-up,
+  .animate-slide-in-right,
+  .animate-slide-in-up,
+  .animate-pulse-glow,
+  .animate-count-up,
+  .animate-timer-pulse,
+  .animate-bounce-in,
+  .animate-page-transition {
+    animation: none !important;
+  }
 }

@@ -70,7 +70,7 @@ export function savePrayerMoment(platform: Platform): void {
       localStorage.setItem(STORAGE_KEYS.PRAYER_DATA, JSON.stringify(allData));
     }
     
-    console.log(`Moment de prière sauvegardé: ${dayData.count}/7`);
+
   } catch (error) {
     console.error('Erreur lors de la sauvegarde du moment de prière:', error);
   }
@@ -103,13 +103,6 @@ export function getDayData(date: string): DayData {
     const allData = getAllStoredData();
     const dayData = allData[date];
     
-    // Log pour debug
-    console.log(`📅 getDayData(${date}):`, {
-      found: !!dayData,
-      storedDates: Object.keys(allData),
-      count: dayData?.count || 0
-    });
-    
     if (dayData) {
       return dayData;
     }
@@ -134,24 +127,28 @@ export function getDayData(date: string): DayData {
 
 /**
  * Récupère les données d'un mois complet
+ * Optimisé: une seule lecture localStorage au lieu de 42 appels getDayData
  */
 export function getMonthData(year: number, month: number): MonthData {
   const dates = getMonthDates(year, month);
-  
-  // Créer un Map pour éliminer les doublons basés sur la date formatée
+  const allData = getAllStoredData();
+
   const uniqueDaysMap = new Map<string, DayData>();
-  
+
   dates.forEach(date => {
     const dateStr = formatDate(date);
-    // Si la date n'existe pas déjà, l'ajouter
     if (!uniqueDaysMap.has(dateStr)) {
-      uniqueDaysMap.set(dateStr, getDayData(dateStr));
+      uniqueDaysMap.set(dateStr, allData[dateStr] || {
+        date: dateStr,
+        moments: [],
+        completed: false,
+        count: 0,
+      });
     }
   });
-  
-  // Convertir le Map en array, en maintenant l'ordre original des dates
+
   const days = Array.from(uniqueDaysMap.values());
-  
+
   return {
     year,
     month,
@@ -165,7 +162,6 @@ export function getMonthData(year: number, month: number): MonthData {
 export function getTodayCount(): number {
   const today = getTodayString();
   const dayData = getDayData(today);
-  console.log(`⏰ getTodayCount: today="${today}", count=${dayData.count}`);
   return dayData.count;
 }
 
@@ -175,7 +171,6 @@ export function getTodayCount(): number {
 export function isTodayCompleted(): boolean {
   const today = getTodayString();
   const dayData = getDayData(today);
-  console.log(`✅ isTodayCompleted: today="${today}", completed=${dayData.completed}`);
   return dayData.completed;
 }
 
@@ -226,7 +221,7 @@ export function clearAllData(): void {
     localStorage.removeItem(STORAGE_KEYS.PLATFORM_INFO);
     localStorage.removeItem(STORAGE_KEYS.APP_CONFIG);
     
-    console.log('Toutes les données ont été effacées');
+
   } catch (error) {
     console.error('Erreur lors de l\'effacement des données:', error);
   }
@@ -234,6 +229,7 @@ export function clearAllData(): void {
 
 /**
  * Obtient les statistiques de l'utilisateur
+ * Optimisé: une seule lecture localStorage, itère sur les données existantes
  */
 export function getUserStats(): {
   totalMoments: number;
@@ -242,43 +238,42 @@ export function getUserStats(): {
   lastActivity: string | null;
 } {
   try {
+    const allData = getAllStoredData();
     const today = new Date();
     let totalMoments = 0;
     let currentStreak = 0;
     let daysCompleted = 0;
     let lastActivity: string | null = null;
-    
-    // Analyser les 365 derniers jours pour un compte plus exact
+
+    // Calculer totalMoments et daysCompleted depuis les données existantes
+    for (const [dateStr, dayData] of Object.entries(allData)) {
+      if (dayData.count > 0) {
+        totalMoments += dayData.count;
+        if (dayData.completed) daysCompleted++;
+        if (!lastActivity || dateStr > lastActivity) lastActivity = dateStr;
+      }
+    }
+
+    // Calculer la série actuelle en remontant depuis aujourd'hui
     for (let i = 0; i < 365; i++) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
       const dateString = formatDate(date);
-      const dayData = getDayData(dateString);
-      
-      totalMoments += dayData.count;
-      
-      if (dayData.completed) {
-        daysCompleted++;
-        // La série actuelle commence à partir d'aujourd'hui
+      const dayData = allData[dateString];
+
+      if (dayData?.completed) {
         if (i === currentStreak) {
           currentStreak++;
         } else if (currentStreak > 0) {
-          // La série s'arrête si on trouve un jour non complété
           break;
         }
       } else if (currentStreak === 0 && i < 10) {
-        // Si on n'a pas commencé la série, continuer à chercher
         continue;
       } else if (currentStreak > 0) {
-        // La série s'arrête
         break;
       }
-      
-      if (dayData.count > 0 && !lastActivity) {
-        lastActivity = dateString;
-      }
     }
-    
+
     return {
       totalMoments,
       currentStreak,
@@ -307,16 +302,9 @@ export function syncStorageData(): void {
     // Vérifier que localData est une string
     const localDataString = typeof localData === 'string' ? localData : null;
     
-    console.log('🔄 Synchronisation des données:', {
-      hasLocal: !!localDataString,
-      localLength: localDataString?.length || 0
-    });
-    
-    if (localDataString) {
-      // Seul localStorage existe, pas de fusion à faire
-      console.log('✅ Données déjà synchronisées');
-    } else {
-      console.log('ℹ️ Aucune donnée à synchroniser');
+    // Vérifier la cohérence des données localStorage
+    if (!localDataString) {
+      return;
     }
   } catch (error) {
     console.error('❌ Erreur lors de la synchronisation des données:', error);

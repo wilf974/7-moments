@@ -127,7 +127,6 @@ export async function migrateFromLocalStorage(): Promise<void> {
     const migrationDone = await getFromIndexedDB('__migration_done__');
     if (migrationDone) return;
 
-    console.log('🔄 Migration localStorage → IndexedDB en cours...');
 
     // Copier toutes les données de localStorage vers IndexedDB
     for (let i = 0; i < localStorage.length; i++) {
@@ -152,7 +151,6 @@ export async function migrateFromLocalStorage(): Promise<void> {
 
     // Marquer la migration comme effectuée
     await setInIndexedDB('__migration_done__', true);
-    console.log('✅ Migration localStorage → IndexedDB terminée');
   } catch (error) {
     console.error('Erreur lors de la migration:', error);
   }

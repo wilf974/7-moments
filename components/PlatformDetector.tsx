@@ -5,7 +5,7 @@
  * Détecte Telegram, iOS, Android et autres plateformes
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Platform } from '@/types';
 import { savePlatformInfo, getPlatformInfo } from '@/lib/storage';
 
@@ -96,31 +96,25 @@ export default function PlatformDetector({
   const [clickCount, setClickCount] = useState(0);
   const [lastClickTime, setLastClickTime] = useState(0);
 
+  const onPlatformDetectedRef = useRef(onPlatformDetected);
+  onPlatformDetectedRef.current = onPlatformDetected;
+
   useEffect(() => {
-    // Vérifier d'abord si on a déjà détecté la plateforme
     const savedPlatformInfo = getPlatformInfo();
-    
+
     if (savedPlatformInfo) {
       setPlatform(savedPlatformInfo.platform);
       setIsDetected(true);
-      onPlatformDetected?.(savedPlatformInfo.platform);
+      onPlatformDetectedRef.current?.(savedPlatformInfo.platform);
       return;
     }
 
-    // Détecter la plateforme
     const detectedPlatform = detectPlatform();
     setPlatform(detectedPlatform);
     setIsDetected(true);
-    
-    // Sauvegarder la détection
     savePlatformInfo(detectedPlatform);
-    
-    // Notifier le parent
-    onPlatformDetected?.(detectedPlatform);
-    
-    // Log pour debug
-    console.log(`Plateforme détectée: ${detectedPlatform}`);
-  }, [onPlatformDetected]);
+    onPlatformDetectedRef.current?.(detectedPlatform);
+  }, []);
 
   /**
    * Gestionnaire de clic pour détecter le spam clic

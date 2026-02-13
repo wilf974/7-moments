@@ -34,13 +34,13 @@ export default function VerseDisplay({
       setIsVisible(true);
     }, 100);
 
-    // Timer pour la barre de progression
+    // Timer pour la barre de progression (2 updates/sec)
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
-        const newProgress = prev - (100 / (duration / 100));
+        const newProgress = prev - (100 / (duration / 500));
         return newProgress <= 0 ? 0 : newProgress;
       });
-    }, 100);
+    }, 500);
 
     // Timer pour la fermeture automatique
     const closeTimer = setTimeout(() => {
@@ -112,7 +112,7 @@ export default function VerseDisplay({
         {/* Barre de progression */}
         <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
           <div 
-            className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-100 ease-linear"
+            className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-500 ease-linear"
             style={{ width: `${progress}%` }}
           />
         </div>

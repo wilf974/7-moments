@@ -1,79 +1,26 @@
 'use client';
 
-/**
- * Composant PrayerButton pour déclencher un moment de prière
- * Gère la logique de déclenchement et les limites quotidiennes
- */
-
-import { useState, useEffect, useCallback } from 'react';
-// import { Platform } from '@/types'; // Non utilisé pour l'instant
-import { savePrayerMoment, getTodayCount, isTodayCompleted } from '@/lib/storage';
-import { usePlatformDetection } from './PlatformDetector';
+import { useState } from 'react';
+import { savePrayerMoment } from '@/lib/storage';
+import { usePrayerState } from '@/lib/usePrayerState';
+import { getPlatformInfo } from '@/lib/storage';
 
 interface PrayerButtonProps {
   onPrayerStarted?: () => void;
-  // onPrayerCompleted?: () => void; // Non utilisé pour l'instant
   onLimitReached?: () => void;
   className?: string;
 }
 
-/**
- * Composant PrayerButton
- */
 export default function PrayerButton({
   onPrayerStarted,
-  // onPrayerCompleted,
   onLimitReached,
   className = '',
 }: PrayerButtonProps) {
-  const [todayCount, setTodayCount] = useState(0);
-  const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  
-  const { platform } = usePlatformDetection();
 
-  /**
-   * Met à jour le compteur quotidien (version stable avec useCallback)
-   * Force la mise à jour sur Android en relisant les données depuis le stockage
-   */
-  const updateTodayCount = useCallback(() => {
-    // Forcer un délai court sur Android pour laisser le temps au stockage de se mettre à jour
-    setTimeout(() => {
-      const count = getTodayCount();
-      const completed = isTodayCompleted();
-      
-      // Logs pour debug
-      console.log(`🔄 PrayerButton.updateTodayCount: ${count}/7 | complété: ${completed}`);
-      
-      setTodayCount(count);
-      setIsCompleted(completed);
-    }, 100);
-  }, []);
+  const { todayCount, isCompleted, refresh } = usePrayerState();
 
-  /**
-   * Effet pour mettre à jour le compteur au montage
-   */
-  useEffect(() => {
-    updateTodayCount();
-  }, [updateTodayCount]);
-
-  /**
-   * Effet pour détecter le changement de jour
-   * Réinitialise le state quand minuit passe
-   */
-  useEffect(() => {
-    // Vérifier toutes les heures si le jour a changé
-    const interval = setInterval(() => {
-      updateTodayCount();
-    }, 60 * 60 * 1000); // 1 heure
-
-    return () => clearInterval(interval);
-  }, [updateTodayCount]);
-
-  /**
-   * Déclenche un moment de prière
-   */
   const handlePrayerStart = () => {
     if (isCompleted) {
       onLimitReached?.();
@@ -81,22 +28,17 @@ export default function PrayerButton({
     }
 
     setIsLoading(true);
-    
+
     try {
-      // Sauvegarder le moment de prière
+      const platformInfo = getPlatformInfo();
+      const platform = platformInfo?.platform || 'web';
       savePrayerMoment(platform);
-      console.log('✅ Moment de prière sauvegardé avec succès');
-      
-      // Mettre à jour le compteur
-      updateTodayCount();
-      
-      // Notifier le parent
+      refresh();
+
       onPrayerStarted?.();
-      
-      // Afficher le succès brièvement
+
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 2000);
-      
     } catch (error) {
       console.error('Erreur lors du déclenchement du moment de prière:', error);
     } finally {
@@ -104,9 +46,6 @@ export default function PrayerButton({
     }
   };
 
-  /**
-   * Obtient le texte du bouton selon l'état
-   */
   const getButtonText = () => {
     if (isLoading) return 'Enregistrement...';
     if (isCompleted) return 'Jour terminé !';
@@ -114,9 +53,6 @@ export default function PrayerButton({
     return `Moment ${todayCount + 1}/7`;
   };
 
-  /**
-   * Obtient la couleur du bouton selon l'état
-   */
   const getButtonColor = () => {
     if (isCompleted) return 'bg-green-500 hover:bg-green-600';
     if (todayCount >= 5) return 'bg-blue-500 hover:bg-blue-600';
@@ -124,9 +60,6 @@ export default function PrayerButton({
     return 'bg-purple-500 hover:bg-purple-600';
   };
 
-  /**
-   * Obtient l'icône selon l'état
-   */
   const getButtonIcon = () => {
     if (isCompleted) return '✅';
     if (todayCount >= 5) return '🙏';
@@ -134,9 +67,6 @@ export default function PrayerButton({
     return '🕊️';
   };
 
-  /**
-   * Obtient le message de motivation
-   */
   const getMotivationMessage = () => {
     if (isCompleted) return 'Félicitations ! Vous avez accompli vos 7 moments de prière aujourd\'hui.';
     if (todayCount >= 5) return 'Presque terminé ! Plus que quelques moments.';
@@ -162,9 +92,9 @@ export default function PrayerButton({
         <div className="bg-gray-200 rounded-full h-3">
           <div
             className={`h-3 rounded-full transition-all duration-1000 ease-out ${
-              isCompleted ? 'bg-green-500' : 
-              todayCount >= 5 ? 'bg-blue-500' : 
-              todayCount >= 3 ? 'bg-indigo-500' : 
+              isCompleted ? 'bg-green-500' :
+              todayCount >= 5 ? 'bg-blue-500' :
+              todayCount >= 3 ? 'bg-indigo-500' :
               'bg-purple-500'
             }`}
             style={{ width: `${(todayCount / 7) * 100}%` }}
@@ -195,7 +125,7 @@ export default function PrayerButton({
           <span className="text-2xl">{getButtonIcon()}</span>
           <span>{getButtonText()}</span>
         </div>
-        
+
         {/* Animation de succès */}
         {showSuccess && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -217,11 +147,6 @@ export default function PrayerButton({
           🎉 Jour accompli ! Revenez demain pour continuer.
         </div>
       )}
-
-      {/* Informations de plateforme */}
-      <div className="text-xs text-gray-400 text-center">
-        Plateforme: {platform} • Dernière mise à jour: {new Date().toLocaleTimeString()}
-      </div>
     </div>
   );
 }
