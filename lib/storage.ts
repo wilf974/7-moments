@@ -5,7 +5,7 @@
  */
 
 import { PrayerMoment, DayData, MonthData, Platform } from '@/types';
-import { formatDate, getTodayString, getMonthDates } from './utils';
+import { formatDate, getTodayString, getMonthDates, parseDate } from './utils';
 
 /**
  * Clés de stockage
@@ -298,10 +298,10 @@ export function getUserStats(): {
 export function syncStorageData(): void {
   try {
     const localData = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.PRAYER_DATA) : null;
-    
+
     // Vérifier que localData est une string
     const localDataString = typeof localData === 'string' ? localData : null;
-    
+
     // Vérifier la cohérence des données localStorage
     if (!localDataString) {
       return;
@@ -309,4 +309,80 @@ export function syncStorageData(): void {
   } catch (error) {
     console.error('❌ Erreur lors de la synchronisation des données:', error);
   }
+}
+
+/**
+ * Calculate current consecutive completed days streak going backwards from today
+ */
+export function getCurrentStreak(): number {
+  const allData = getAllStoredData();
+  const today = new Date();
+  let streak = 0;
+
+  for (let i = 0; i < 365; i++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateString = formatDate(date);
+    const dayData = allData[dateString];
+
+    if (dayData?.completed) {
+      streak++;
+    } else if (i === 0) {
+      // Today not completed yet is OK, keep checking yesterday
+      continue;
+    } else {
+      break;
+    }
+  }
+
+  return streak;
+}
+
+/**
+ * Find longest consecutive completed streak ever
+ */
+export function getBestStreak(): number {
+  const allData = getAllStoredData();
+  const sortedDates = Object.keys(allData).sort();
+
+  if (sortedDates.length === 0) return 0;
+
+  let bestStreak = 0;
+  let currentStreak = 0;
+
+  // Iterate through all dates from earliest to latest
+  const firstDate = parseDate(sortedDates[0]);
+  const lastDate = parseDate(sortedDates[sortedDates.length - 1]);
+
+  const current = new Date(firstDate);
+  while (current <= lastDate) {
+    const dateString = formatDate(current);
+    if (allData[dateString]?.completed) {
+      currentStreak++;
+      bestStreak = Math.max(bestStreak, currentStreak);
+    } else {
+      currentStreak = 0;
+    }
+    current.setDate(current.getDate() + 1);
+  }
+
+  return bestStreak;
+}
+
+/**
+ * Return array of 7 counts for last 7 days (index 0 = 6 days ago, index 6 = today)
+ */
+export function getWeekSummary(): number[] {
+  const allData = getAllStoredData();
+  const today = new Date();
+  const counts: number[] = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateString = formatDate(date);
+    counts.push(allData[dateString]?.count || 0);
+  }
+
+  return counts;
 }

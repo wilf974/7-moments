@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, lazy, Suspense, useCallback } from 'react';
+import { useState, lazy, Suspense, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import PrayerButton from '@/components/PrayerButton';
 import Timer from '@/components/Timer';
 import PlatformDetector from '@/components/PlatformDetector';
 import CandleRow from '@/components/CandleRow';
+import ReminderSettings from '@/components/ReminderSettings';
 import { Platform } from '@/types';
 import { usePrayerState } from '@/lib/usePrayerState';
 import { getRandomVerse, BibleVerse } from '@/lib/verses';
+import { scheduleReminders, hasAnyReminderEnabled } from '@/lib/notifications';
 
 const VerseDisplay = lazy(() => import('@/components/VerseDisplay'));
 
@@ -17,8 +19,16 @@ export default function Home() {
   const [currentPlatform, setCurrentPlatform] = useState<Platform>('unknown');
   const [showVerse, setShowVerse] = useState(false);
   const [currentVerse, setCurrentVerse] = useState<BibleVerse | null>(null);
+  const [showReminders, setShowReminders] = useState(false);
 
   const { todayCount, isCompleted, refresh } = usePrayerState();
+
+  // Schedule reminders on mount if any are enabled
+  useEffect(() => {
+    if (hasAnyReminderEnabled()) {
+      scheduleReminders();
+    }
+  }, []);
 
   const handlePrayerStarted = () => {
     setShowTimer(true);
@@ -62,6 +72,18 @@ export default function Home() {
         showBadge={true}
         onVerseRequest={handleVerseRequest}
       />
+
+      {/* Gear Icon Button - Reminder Settings */}
+      <button
+        onClick={() => setShowReminders(true)}
+        className="fixed top-4 left-4 z-40 bg-[#FFFBEB] border border-[#FDE68A] rounded-full p-2 shadow-sm hover:shadow-md transition-all text-[#D97706] hover:text-[#92400E]"
+        title="Paramètres des rappels"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </button>
 
       {/* Header */}
       <header className="text-center py-8 px-4 bg-gradient-to-b from-amber-900/20 via-amber-50 to-[#FFFBEB]">
@@ -178,6 +200,9 @@ export default function Home() {
           />
         </Suspense>
       )}
+
+      {/* Reminder Settings Modal */}
+      <ReminderSettings isOpen={showReminders} onClose={() => setShowReminders(false)} />
     </div>
   );
 }

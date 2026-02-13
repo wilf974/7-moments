@@ -3,6 +3,7 @@
 /**
  * Composant de détection de plateforme
  * Détecte Telegram, iOS, Android et autres plateformes
+ * Thème: Chapelle Dorée (amber/gold)
  */
 
 import { useEffect, useState, useRef } from 'react';
@@ -30,23 +31,24 @@ function detectPlatform(): Platform {
 
   // Détection via User Agent
   const userAgent = window.navigator.userAgent.toLowerCase();
-  
+
   // iOS
   if (/iphone|ipad|ipod/.test(userAgent)) {
     return 'ios';
   }
-  
+
   // Android
   if (/android/.test(userAgent)) {
     return 'android';
   }
-  
+
   // Web (navigateur standard)
   return 'web';
 }
 
 /**
  * Obtient l'icône et le nom de la plateforme
+ * Palette Chapelle Dorée: amber/gold tones
  */
 function getPlatformDisplayInfo(platform: Platform): { icon: string; name: string; color: string } {
   switch (platform) {
@@ -54,31 +56,31 @@ function getPlatformDisplayInfo(platform: Platform): { icon: string; name: strin
       return {
         icon: '📱',
         name: 'Telegram',
-        color: 'bg-blue-500',
+        color: 'bg-amber-600',
       };
     case 'ios':
       return {
         icon: '🍎',
         name: 'iOS',
-        color: 'bg-gray-800',
+        color: 'bg-[#78350F]',
       };
     case 'android':
       return {
         icon: '🤖',
         name: 'Android',
-        color: 'bg-green-500',
+        color: 'bg-amber-700',
       };
     case 'web':
       return {
         icon: '🌐',
         name: 'Web',
-        color: 'bg-indigo-500',
+        color: 'bg-[#D97706]',
       };
     default:
       return {
         icon: '❓',
         name: 'Inconnu',
-        color: 'bg-gray-500',
+        color: 'bg-amber-400',
       };
   }
 }
@@ -86,8 +88,8 @@ function getPlatformDisplayInfo(platform: Platform): { icon: string; name: strin
 /**
  * Composant PlatformDetector
  */
-export default function PlatformDetector({ 
-  onPlatformDetected, 
+export default function PlatformDetector({
+  onPlatformDetected,
   showBadge = true,
   onVerseRequest
 }: PlatformDetectorProps) {
@@ -122,11 +124,11 @@ export default function PlatformDetector({
   const handleClick = () => {
     const now = Date.now();
     const timeDiff = now - lastClickTime;
-    
+
     // Si c'est un clic rapide (moins de 500ms depuis le dernier clic)
     if (timeDiff < 500) {
       setClickCount(prev => prev + 1);
-      
+
       // Si on a 5 clics rapides, déclencher l'affichage du verset
       if (clickCount >= 4) { // 4 car on vient d'incrémenter
         onVerseRequest?.();
@@ -136,7 +138,7 @@ export default function PlatformDetector({
       // Reset le compteur si trop de temps entre les clics
       setClickCount(1);
     }
-    
+
     setLastClickTime(now);
   };
 
@@ -148,8 +150,8 @@ export default function PlatformDetector({
 
   return (
     <div className="fixed top-4 right-4 z-50">
-      <div 
-        className={`${platformInfo.color} text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg flex items-center gap-1 cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-xl`}
+      <div
+        className={`${platformInfo.color} text-white px-3 py-1 rounded-full text-xs font-medium shadow-amber-900/20 flex items-center gap-1 cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-xl`}
         title={`Plateforme détectée: ${platformInfo.name}${onVerseRequest ? ' • Cliquez rapidement 5 fois pour un verset' : ''}`}
         onClick={handleClick}
       >
@@ -176,7 +178,7 @@ export function usePlatformDetection() {
     const detectedPlatform = detectPlatform();
     setPlatform(detectedPlatform);
     setIsDetected(true);
-    
+
     // Sauvegarder si pas déjà fait
     const savedInfo = getPlatformInfo();
     if (!savedInfo) {
