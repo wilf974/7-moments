@@ -48,62 +48,52 @@ export default function PrayerButton({
 
   const getButtonText = () => {
     if (isLoading) return 'Enregistrement...';
-    if (isCompleted) return 'Jour terminé !';
-    if (todayCount === 0) return 'Commencer le premier moment';
-    return `Moment ${todayCount + 1}/7`;
+    if (isCompleted) return '7 bougies allumées ✨';
+    if (todayCount === 0) return 'Allumer une bougie';
+    return `Bougie ${todayCount + 1}/7`;
   };
 
   const getButtonColor = () => {
-    if (isCompleted) return 'bg-green-500 hover:bg-green-600';
-    if (todayCount >= 5) return 'bg-blue-500 hover:bg-blue-600';
-    if (todayCount >= 3) return 'bg-indigo-500 hover:bg-indigo-600';
-    return 'bg-purple-500 hover:bg-purple-600';
+    if (isCompleted) return 'bg-amber-400';
+    return 'bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800';
   };
 
   const getButtonIcon = () => {
-    if (isCompleted) return '✅';
-    if (todayCount >= 5) return '🙏';
-    if (todayCount >= 3) return '✨';
-    return '🕊️';
+    return '🕯️';
   };
 
   const getMotivationMessage = () => {
-    if (isCompleted) return 'Félicitations ! Vous avez accompli vos 7 moments de prière aujourd\'hui.';
-    if (todayCount >= 5) return 'Presque terminé ! Plus que quelques moments.';
-    if (todayCount >= 3) return 'Excellent ! Vous êtes à mi-chemin.';
-    if (todayCount >= 1) return 'Continuez ! Chaque moment compte.';
-    return 'Commencez votre journée avec un moment de recueillement.';
+    if (isCompleted) return 'Vos 7 bougies illuminent cette journée !';
+    if (todayCount >= 5) return 'La chapelle s\'illumine... encore quelques bougies.';
+    if (todayCount >= 3) return 'La lumière grandit. Continuez.';
+    if (todayCount >= 1) return 'Chaque bougie compte.';
+    return 'Allumez votre première bougie du jour.';
   };
 
   return (
     <div className={`flex flex-col items-center space-y-4 ${className}`}>
       {/* Compteur quotidien */}
       <div className="text-center">
-        <div className="text-4xl font-bold text-gray-800 mb-2 animate-count-up">
+        <div className="text-4xl font-bold text-[#78350F] mb-2 animate-count-up">
           {todayCount}/7
         </div>
-        <div className="text-sm text-gray-600 animate-fade-in">
+        <div className="text-sm text-[#92400E] animate-fade-in">
           Moments de prière aujourd&apos;hui
         </div>
       </div>
 
       {/* Barre de progression */}
       <div className="w-full max-w-xs">
-        <div className="bg-gray-200 rounded-full h-3">
+        <div className="bg-amber-100 rounded-full h-3">
           <div
-            className={`h-3 rounded-full transition-all duration-1000 ease-out ${
-              isCompleted ? 'bg-green-500' :
-              todayCount >= 5 ? 'bg-blue-500' :
-              todayCount >= 3 ? 'bg-indigo-500' :
-              'bg-purple-500'
-            }`}
+            className="h-3 rounded-full transition-all duration-1000 ease-out bg-gradient-to-r from-amber-500 to-amber-400"
             style={{ width: `${(todayCount / 7) * 100}%` }}
           />
         </div>
       </div>
 
       {/* Message de motivation */}
-      <div className="text-center text-sm text-gray-600 max-w-md px-4 animate-fade-in">
+      <div className="text-center text-sm text-[#92400E] max-w-md px-4 animate-fade-in">
         <p>{getMotivationMessage()}</p>
       </div>
 
@@ -136,14 +126,14 @@ export default function PrayerButton({
 
       {/* Message de succès */}
       {showSuccess && (
-        <div className="text-center text-green-600 font-medium animate-fade-in">
+        <div className="text-center text-[#FBBF24] font-medium animate-fade-in">
           Moment enregistré avec succès !
         </div>
       )}
 
       {/* Message de limite atteinte */}
       {isCompleted && (
-        <div className="text-center text-green-600 font-medium">
+        <div className="text-center text-[#FBBF24] font-medium">
           🎉 Jour accompli ! Revenez demain pour continuer.
         </div>
       )}

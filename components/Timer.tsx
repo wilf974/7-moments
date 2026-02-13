@@ -3,6 +3,7 @@
 /**
  * Composant Timer pour le moment de prière
  * Compte à rebours d'1 minute avec animations
+ * Thème "Chapelle Dorée" - Prière dans une chapelle sombre éclairée par une bougie
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -38,10 +39,10 @@ export default function Timer({
    */
   const startTimer = useCallback(() => {
     if (state === 'running') return;
-    
+
     setState('running');
     onStart?.();
-    
+
     const id = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -52,7 +53,7 @@ export default function Timer({
         return prev - 1;
       });
     }, 1000);
-    
+
     setIntervalId(id);
   }, [state, onStart, onComplete]);
 
@@ -66,11 +67,11 @@ export default function Timer({
       clearInterval(intervalId);
       setIntervalId(null);
     }
-    
+
     // Réinitialiser complètement l'état du timer
     setState('idle');
     setTimeLeft(duration);
-    
+
     // Appeler le callback du parent
     onNext?.();
   }, [intervalId, duration, onNext]);
@@ -104,34 +105,34 @@ export default function Timer({
   const progress = ((duration - timeLeft) / duration) * 100;
 
   /**
-   * Obtient la couleur selon l'état
+   * Obtient la couleur selon l'état (thème dorée/chapelle)
    */
   const getStateColor = () => {
     switch (state) {
       case 'running':
-        return 'text-blue-600';
+        return 'text-[#F59E0B]'; // Gold
       case 'paused':
-        return 'text-yellow-600';
+        return 'text-[#D97706]'; // Amber
       case 'completed':
-        return 'text-green-600';
+        return 'text-[#FBBF24]'; // Bright gold
       default:
-        return 'text-gray-600';
+        return 'text-amber-800';
     }
   };
 
   /**
-   * Obtient l'icône selon l'état
+   * Obtient l'icône selon l'état (thème bougie/chapelle)
    */
   const getStateIcon = () => {
     switch (state) {
       case 'running':
-        return '⏱️';
+        return '🕯️'; // Bougie allumée
       case 'paused':
         return '⏸️';
       case 'completed':
-        return '✅';
+        return '✨'; // Lumière spirituelle
       default:
-        return '⏰';
+        return '🕯️'; // Bougie prête
     }
   };
 
@@ -139,45 +140,41 @@ export default function Timer({
     <div className={`flex flex-col items-center space-y-4 ${className}`}>
       {/* Affichage du temps */}
       <div className="relative animate-fade-in-up">
-        {/* Cercle de progression */}
-        <div className={`w-32 h-32 relative ${state === 'running' ? 'animate-timer-pulse' : ''}`}>
-          <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
-            {/* Cercle de fond */}
+        {/* Cercle de progression - taille agrandie */}
+        <div className="w-40 h-40 relative">
+          <svg className="w-40 h-40 transform -rotate-90" viewBox="0 0 40 40">
+            {/* Cercle de fond - warm brown subtil */}
             <path
-              d="M18 2.0845
-                a 15.9155 15.9155 0 0 1 0 31.831
-                a 15.9155 15.9155 0 0 1 0 -31.831"
+              d="M20 2.5
+                a 17.5 17.5 0 0 1 0 35
+                a 17.5 17.5 0 0 1 0 -35"
               fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-gray-200"
+              stroke="#78350F"
+              strokeWidth="2.5"
+              opacity="0.3"
             />
-            {/* Cercle de progression */}
+            {/* Cercle de progression - gold */}
             <path
-              d="M18 2.0845
-                a 15.9155 15.9155 0 0 1 0 31.831
-                a 15.9155 15.9155 0 0 1 0 -31.831"
+              d="M20 2.5
+                a 17.5 17.5 0 0 1 0 35
+                a 17.5 17.5 0 0 1 0 -35"
               fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+              stroke="#F59E0B"
+              strokeWidth="2.5"
               strokeDasharray={`${progress}, 100`}
-              className={`transition-all duration-1000 ${
-                state === 'completed' ? 'text-green-500' : 
-                state === 'running' ? 'text-blue-500' : 
-                'text-yellow-500'
-              }`}
+              className="transition-all duration-1000"
             />
           </svg>
-          
+
           {/* Temps au centre */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className={`text-2xl font-mono font-bold ${getStateColor()} animate-count-up`}>
+              <div className={`text-3xl font-[family-name:var(--font-playfair)] font-bold ${getStateColor()} animate-count-up`}>
                 {formatDuration(timeLeft)}
               </div>
-              <div className="text-xs text-gray-500 mt-1 animate-fade-in">
-                {getStateIcon()} {state === 'running' ? 'En cours' : 
-                 state === 'paused' ? 'En pause' : 
+              <div className="text-xs text-[#D97706] mt-1 animate-fade-in font-[family-name:var(--font-inter)]">
+                {getStateIcon()} {state === 'running' ? 'En cours' :
+                 state === 'paused' ? 'En pause' :
                  state === 'completed' ? 'Terminé' : 'Prêt'}
               </div>
             </div>
@@ -190,34 +187,34 @@ export default function Timer({
         {state === 'idle' && (
           <button
             onClick={startTimer}
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300 font-medium hover:scale-105"
+            className="px-6 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-all duration-300 font-medium hover:scale-105 shadow-lg shadow-amber-900/30 font-[family-name:var(--font-inter)]"
           >
             Démarrer
           </button>
         )}
-        
+
         {state === 'running' && (
           <button
             onClick={handleNext}
-            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 font-medium hover:scale-105 animate-bounce-in"
+            className="px-6 py-2 bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-xl hover:from-amber-700 hover:to-amber-800 transition-all duration-300 font-medium hover:scale-105 animate-bounce-in shadow-lg shadow-amber-900/30 font-[family-name:var(--font-inter)]"
           >
             Suivant
           </button>
         )}
-        
+
         {state === 'paused' && (
           <button
             onClick={handleNext}
-            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 font-medium hover:scale-105"
+            className="px-6 py-2 bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-xl hover:from-amber-700 hover:to-amber-800 transition-all duration-300 font-medium hover:scale-105 shadow-lg shadow-amber-900/30 font-[family-name:var(--font-inter)]"
           >
             Suivant
           </button>
         )}
-        
+
         {state === 'completed' && (
           <button
             onClick={handleNext}
-            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 font-medium hover:scale-105 animate-bounce-in"
+            className="px-6 py-2 bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-xl hover:from-amber-700 hover:to-amber-800 transition-all duration-300 font-medium hover:scale-105 animate-bounce-in shadow-lg shadow-amber-900/30 font-[family-name:var(--font-inter)]"
           >
             Suivant
           </button>
@@ -226,14 +223,14 @@ export default function Timer({
 
       {/* Message de motivation */}
       {state === 'running' && (
-        <div className="text-center text-sm text-gray-600 max-w-xs">
-          <p>Prenez un moment pour vous recueillir...</p>
+        <div className="text-center text-sm text-amber-300 max-w-xs">
+          <p className="italic font-[family-name:var(--font-playfair)]">Laissez la lumière de la prière vous envelopper...</p>
         </div>
       )}
-      
+
       {state === 'completed' && (
-        <div className="text-center text-sm text-green-600 max-w-xs">
-          <p>✨ Moment de prière terminé !</p>
+        <div className="text-center text-sm text-[#FBBF24] max-w-xs">
+          <p className="font-[family-name:var(--font-playfair)]">✨ Votre bougie a fini de brûler</p>
         </div>
       )}
     </div>

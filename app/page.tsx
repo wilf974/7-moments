@@ -5,6 +5,7 @@ import Link from 'next/link';
 import PrayerButton from '@/components/PrayerButton';
 import Timer from '@/components/Timer';
 import PlatformDetector from '@/components/PlatformDetector';
+import CandleRow from '@/components/CandleRow';
 import { Platform } from '@/types';
 import { usePrayerState } from '@/lib/usePrayerState';
 import { getRandomVerse, BibleVerse } from '@/lib/verses';
@@ -54,7 +55,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-[#FFFBEB]">
       {/* Détecteur de plateforme */}
       <PlatformDetector
         onPlatformDetected={handlePlatformDetected}
@@ -63,12 +64,12 @@ export default function Home() {
       />
 
       {/* Header */}
-      <header className="text-center py-8 px-4">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-2 animate-fade-in-up">
-          7 RDV/jour <span className="text-purple-600 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">avec Dieu</span>
+      <header className="text-center py-8 px-4 bg-gradient-to-b from-amber-900/20 via-amber-50 to-[#FFFBEB]">
+        <h1 className="text-4xl md:text-5xl font-[family-name:var(--font-playfair)] font-bold mb-2 animate-fade-in-up bg-gradient-to-r from-amber-600 to-amber-800 bg-clip-text text-transparent">
+          7 Rendez-vous
         </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.3s' }}>
-          &ldquo;Sept fois le jour je te loue à cause de tes justes ordonnances.&rdquo; - Psaume 119, verset 164
+        <p className="text-lg font-[family-name:var(--font-playfair)] italic text-[#92400E] max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          &ldquo;Sept fois le jour je te loue à cause de tes justes ordonnances.&rdquo; - Psaume 119:164
         </p>
       </header>
 
@@ -77,6 +78,12 @@ export default function Home() {
         {!showTimer ? (
           /* Vue principale avec bouton de prière */
           <div className="max-w-2xl mx-auto animate-slide-in-up" style={{ animationDelay: '0.6s' }}>
+            {/* CandleRow - 7 bougies avec todayCount allumées */}
+            <div className="mb-8">
+              <CandleRow count={todayCount} />
+            </div>
+
+            {/* Bouton de prière */}
             <PrayerButton
               onPrayerStarted={handlePrayerStarted}
               onLimitReached={handleLimitReached}
@@ -85,31 +92,31 @@ export default function Home() {
 
             {/* Statistiques rapides */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="bg-white rounded-lg p-6 shadow-sm text-center animate-count-up" style={{ animationDelay: '0.9s' }}>
-                <div className="text-2xl font-bold text-purple-600 mb-1">
+              <div className="bg-[#FFFBEB] border border-[#FDE68A] rounded-lg p-6 shadow-sm text-center animate-count-up" style={{ animationDelay: '0.9s' }}>
+                <div className="text-2xl font-bold text-[#D97706] mb-1">
                   {todayCount}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-[#78350F]">
                   Moments aujourd&apos;hui
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg p-6 shadow-sm text-center animate-count-up" style={{ animationDelay: '1.0s' }}>
-                <div className="text-2xl font-bold text-blue-600 mb-1 animate-bounce-in">
+              <div className="bg-[#FFFBEB] border border-[#FDE68A] rounded-lg p-6 shadow-sm text-center animate-count-up" style={{ animationDelay: '1.0s' }}>
+                <div className="text-2xl font-bold text-[#D97706] mb-1 animate-bounce-in">
                   {isCompleted ? '✅' : '⏳'}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-[#78350F]">
                   Statut du jour
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg p-6 shadow-sm text-center animate-count-up" style={{ animationDelay: '1.1s' }}>
-                <div className="text-2xl font-bold text-indigo-600 mb-1 animate-bounce-in">
+              <div className="bg-[#FFFBEB] border border-[#FDE68A] rounded-lg p-6 shadow-sm text-center animate-count-up" style={{ animationDelay: '1.1s' }}>
+                <div className="text-2xl font-bold text-[#D97706] mb-1 animate-bounce-in">
                   {currentPlatform === 'telegram' ? '📱' :
                    currentPlatform === 'ios' ? '🍎' :
                    currentPlatform === 'android' ? '🤖' : '🌐'}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-[#78350F]">
                   Plateforme
                 </div>
               </div>
@@ -119,21 +126,21 @@ export default function Home() {
             <div className="text-center animate-fade-in" style={{ animationDelay: '1.2s' }}>
               <Link
                 href="/calendar"
-                className="inline-flex items-center px-6 py-3 bg-white text-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 font-medium hover:scale-105"
+                className="inline-flex items-center px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 font-medium hover:scale-105"
               >
                 📅 Voir le calendrier
               </Link>
             </div>
           </div>
         ) : (
-          /* Vue timer */
-          <div className="max-w-md mx-auto animate-page-transition">
-            <div className="bg-white rounded-2xl p-8 shadow-lg">
+          /* Vue timer - Full screen dark overlay */
+          <div className="fixed inset-0 bg-[#1C1208] flex items-center justify-center z-50 animate-page-transition">
+            <div className="max-w-md w-full mx-4">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2 animate-fade-in-up">
+                <h2 className="text-2xl font-[family-name:var(--font-playfair)] font-bold text-amber-100 mb-2 animate-fade-in-up">
                   Moment de Prière
                 </h2>
-                <p className="text-gray-600 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <p className="text-amber-200/80 animate-fade-in" style={{ animationDelay: '0.2s' }}>
                   Prenez un moment pour vous recueillir
                 </p>
               </div>
@@ -146,17 +153,17 @@ export default function Home() {
                 className="mb-6"
               />
             </div>
-        </div>
+          </div>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="text-center py-8 px-4 text-gray-500 text-sm">
-        <p>
+      <footer className="text-center py-8 px-4 text-[#92400E] text-sm">
+        <p className="font-[family-name:var(--font-playfair)] italic">
           Application 7 Rendez-vous de Prière •
           Données stockées localement sur votre appareil
         </p>
-        <p className="mt-2">
+        <p className="mt-2 font-[family-name:var(--font-playfair)] italic">
           Développé avec ❤️ pour votre cheminement spirituel
         </p>
       </footer>
