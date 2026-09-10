@@ -1,5 +1,34 @@
 # Historique du Projet 7-moments
 
+## 2026-09-10 - Carnet partagé entre appareils, hors connexion, bougie réglable
+
+### Contexte (retour de l'utilisateur principal, Samsung + iPad)
+- L'historique montre presque chaque semaine des journées non terminées, alors qu'il fait ses 7 rendez-vous tous les jours depuis environ 9 mois (un seul jour manqué, pour maladie).
+- Le compteur « se remet à zéro » après 3 à 5 rendez-vous.
+- L'app est parfois « hors connexion ».
+- La minute de bougie est trop longue : ses rendez-vous sont à heures fixes, 15 ou 30 s suffisent.
+
+### Causes
+- **Un carnet par navigateur et par appareil.** Tout vivait dans le localStorage, sans aucune synchronisation. Les moments faits sur le Samsung n'existent pas sur l'iPad et inversement ; chaque calendrier ne voit qu'une partie des journées. Sur iPad, un raccourci d'écran d'accueil a même un stockage séparé de Safari, et Safari efface les données d'un site non ouvert pendant 7 jours.
+- **Aucun fonctionnement hors ligne.** Sans service worker, l'app ne s'ouvre pas quand le serveur est injoignable. Le serveur est une VM sur le PC de la maison, qui a redémarré plusieurs fois début septembre.
+- **Compteur figé.** Il n'était relu qu'une fois par heure : une app restée ouverte affichait encore la veille.
+- **Calendrier décalé en octobre.** La grille avançait de 24 h en millisecondes : au passage à l'heure d'hiver, une date apparaissait en double (le « double 26 » d'octobre 2025) et la suite du mois tombait sous le mauvais jour.
+
+### Correctifs
+- **Mes appareils** (Réglages) : le premier appareil demande un code de 8 caractères, tiré par le serveur ; les autres le saisissent. `POST /api/sync` fait l'union des moments par horodatage (jamais de suppression), stockée dans `./data/carnets/<CODE>.json` (volume, uid 1001). Écriture atomique avec fsync, verrou par carnet, fichier illisible mis de côté. Limites par IP : 120 requêtes par 10 min, 10 codes inconnus par heure, 5 créations par jour ; carnet plafonné à 3000 jours ou 2 Mo. Sans code, rien ne quitte l'appareil.
+- Synchro à l'ouverture, au retour sur l'app, au retour du réseau et après chaque moment ; hors connexion, les moments attendent sur l'appareil.
+- `public/sw.js` : pages en réseau d'abord puis copie en cache (panne, 5xx ou plus de 4 s) ; `/_next/static` en cache d'abord ; `/api` jamais en cache.
+- Compteur relu au premier plan et chaque minute ; calendrier relu après chaque synchro.
+- Bougie : 15 s, 30 s (défaut) ou 1 min. Le moment reste compté dès l'appui.
+- Grille du calendrier calculée en jours du calendrier (`lib/calendarDates.ts`).
+
+### Tests
+`TZ=Europe/Paris node --experimental-strip-types --test __tests__/*.test.ts` : 33 tests sans dépendance (fusion, code, stockage, débit, grille).
+
+### Limites connues
+- Les jours déjà effacés d'un appareil ne peuvent pas être retrouvés. La fusion réunit ce qui existe encore sur chaque appareil.
+- Un jour où des moments ont été refaits après une « remise à zéro » peut compter plus de 7 moments : le compteur est plafonné à 7.
+
 ## 2026-02-13 - Redesign "Chapelle Doree" complet
 
 ### Contexte

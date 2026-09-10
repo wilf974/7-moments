@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mergeStoredData, sanitizeStoredData, daysSince, MOMENTS_PER_DAY } from '../lib/merge.ts';
+import { mergeStoredData, sanitizeStoredData, daysSince, missingFrom, MOMENTS_PER_DAY } from '../lib/merge.ts';
 
 const m = (timestamp: number, platform = 'android') => ({ timestamp, platform, duration: 30 });
 const day = (date: string, ts: number[], platform = 'android') => ({
@@ -80,4 +80,21 @@ test('daysSince ne garde que les jours à partir de la date donnée', () => {
   const data = { '2026-08-30': day('2026-08-30', [1]), '2026-09-01': day('2026-09-01', [2]), '2026-09-02': day('2026-09-02', [3]) };
   assert.deepEqual(Object.keys(daysSince(data, '2026-09-01')).sort(), ['2026-09-01', '2026-09-02']);
   assert.deepEqual(Object.keys(daysSince(data, null)).sort(), Object.keys(data).sort());
+});
+
+test('sanitize rejette les dates impossibles ou hors de 2020-2100', () => {
+  const clean = sanitizeStoredData({
+    '9999-99-99': day('9999-99-99', [1]),
+    '2026-02-30': day('2026-02-30', [2]),
+    '1999-12-31': day('1999-12-31', [3]),
+    '2026-02-28': day('2026-02-28', [4]),
+  });
+  assert.deepEqual(Object.keys(clean), ['2026-02-28']);
+});
+
+test('missingFrom repère un moment local absent du serveur, même sur un jour connu', () => {
+  const local = { '2026-09-01': day('2026-09-01', [1, 2]) };
+  assert.equal(missingFrom(local, { '2026-09-01': day('2026-09-01', [1, 2, 3]) }), false);
+  assert.equal(missingFrom(local, { '2026-09-01': day('2026-09-01', [1]) }), true);
+  assert.equal(missingFrom(local, {}), true);
 });

@@ -13,11 +13,21 @@ export const MOMENTS_PER_DAY = 7;
 /** Toutes les journées, indexées par date locale YYYY-MM-DD. */
 export type StoredData = Record<string, DayData>;
 
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const PLATFORMS: readonly Platform[] = ['ios', 'android', 'telegram', 'web', 'unknown'];
 /** Garde-fous contre une entrée démesurée (7 par appareil, quelques appareils au plus). */
 const MAX_MOMENTS_PER_DAY = 50;
 const MAX_DAYS = 20000;
+
+/** Vraie date du calendrier, entre 2020 et 2100 (bornes larges : une horloge d'appareil fausse ne fait rien perdre). */
+function isRealDate(date: string): boolean {
+  const m = DATE_RE.exec(date);
+  if (!m) return false;
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  if (y < 2020 || y > 2100) return false;
+  const check = new Date(Date.UTC(y, mo - 1, d));
+  return check.getUTCFullYear() === y && check.getUTCMonth() === mo - 1 && check.getUTCDate() === d;
+}
 
 function normalizeMoment(raw: unknown): PrayerMoment | null {
   if (!raw || typeof raw !== 'object') return null;
@@ -48,7 +58,7 @@ export function sanitizeStoredData(input: unknown): StoredData {
   let n = 0;
   for (const [date, day] of Object.entries(input as Record<string, unknown>)) {
     if (n >= MAX_DAYS) break;
-    if (!DATE_RE.test(date) || !day || typeof day !== 'object') continue;
+    if (!isRealDate(date) || !day || typeof day !== 'object') continue;
     const raw = (day as { moments?: unknown }).moments;
     if (!Array.isArray(raw)) continue;
     const moments = raw.map(normalizeMoment).filter((m): m is PrayerMoment => m !== null);
@@ -69,6 +79,15 @@ export function mergeStoredData(a: StoredData, b: StoredData): StoredData {
     out[date] = buildDay(date, moments);
   }
   return out;
+}
+
+/** Vrai si `server` ne contient pas l'un des moments de `local` (jour absent ou moment absent). */
+export function missingFrom(local: StoredData, server: StoredData): boolean {
+  for (const [date, day] of Object.entries(local)) {
+    const known = new Set((server[date]?.moments ?? []).map((m) => m.timestamp));
+    if (day.moments.some((m) => !known.has(m.timestamp))) return true;
+  }
+  return false;
 }
 
 /** Sous-ensemble des jours à partir d'une date (incluse). `null` renvoie tout. */

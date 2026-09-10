@@ -32,7 +32,7 @@ async function precache() {
   const statics = await caches.open(STATIC_CACHE);
   for (const page of PAGES) {
     const res = await fetch(page, { cache: 'no-store' });
-    if (!res.ok) continue;
+    if (!res.ok || res.redirected) continue;
     const html = await res.clone().text();
     await pages.put(page, res);
     const assets = new Set(html.match(/\/_next\/static\/[^"'\s)\\]+/g) || []);

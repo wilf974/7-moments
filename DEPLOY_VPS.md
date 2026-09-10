@@ -176,3 +176,20 @@ sudo systemctl status nginx
 docker ps -a
 ```
 
+
+## Carnets synchronisés (depuis le 2026-09-10)
+
+Les carnets partagés entre appareils sont stockés dans `./data/carnets/` (volume monté sur `/data`).
+Le conteneur tourne en lecture seule avec l'utilisateur `nextjs` (uid 1001) : **le dossier doit
+exister et lui appartenir avant le premier démarrage**, sinon Docker le crée en root et chaque
+synchronisation échoue en 500.
+
+```bash
+cd /opt/apps/7-moments
+mkdir -p data/carnets
+chown -R 1001:1001 data          # sans sudo : docker run --rm -v "$PWD/data:/d" alpine chown -R 1001:1001 /d
+docker compose up -d --build
+```
+
+Sauvegarder `data/` suffit pour conserver tous les carnets. Ne jamais le copier dans l'image
+(il est exclu par `.dockerignore`).

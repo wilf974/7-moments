@@ -12,7 +12,8 @@ import { syncNow } from '@/lib/sync';
 
 export default function SyncManager() {
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
+    // En développement, le service worker garderait en cache des fichiers qui changent sans cesse
+    if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch((error) => {
         console.warn('Service worker non installé :', error);
       });

@@ -44,12 +44,32 @@ async function withLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
 }
 
 async function readFile(file: string): Promise<StoredData | null> {
+  let text: string;
   try {
-    const parsed = JSON.parse(await fs.readFile(file, 'utf8')) as { days?: StoredData };
-    return parsed.days ?? {};
+    text = await fs.readFile(file, 'utf8');
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
     throw error;
+  }
+  try {
+    const parsed = JSON.parse(text) as { days?: StoredData } | null;
+    return parsed?.days ?? {};
+  } catch {
+    // Fichier abîmé : on le garde à part et le carnet repart vide ; les appareils
+    // renverront leurs moments à la synchro suivante (ils détectent ce qui manque).
+    await fs.rename(file, `${file}.corrupt-${Date.now()}`).catch(() => undefined);
+    console.error(`[carnet] fichier illisible mis de côté : ${path.basename(file)}`);
+    return {};
+  }
+}
+
+export async function carnetExists(code: string, opts: StoreOptions = {}): Promise<boolean> {
+  const file = fileFor(code, opts.dir ?? DEFAULT_DIR);
+  try {
+    await fs.access(file);
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -81,8 +101,19 @@ export async function updateCarnet(
     }
 
     const tmp = `${file}.${randomBytes(6).toString('hex')}.tmp`;
-    await fs.writeFile(tmp, JSON.stringify({ version: 1, updatedAt: new Date().toISOString(), days: next }), 'utf8');
-    await fs.rename(tmp, file);
+    try {
+      const handle = await fs.open(tmp, 'w');
+      try {
+        await handle.writeFile(JSON.stringify({ version: 1, updatedAt: new Date().toISOString(), days: next }), 'utf8');
+        await handle.sync();
+      } finally {
+        await handle.close();
+      }
+      await fs.rename(tmp, file);
+    } catch (error) {
+      await fs.rm(tmp, { force: true }).catch(() => undefined);
+      throw error;
+    }
     return next;
   });
 }

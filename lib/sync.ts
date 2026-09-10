@@ -7,8 +7,8 @@
  * La fusion n'ajoute que des moments, elle n'en retire jamais.
  */
 import { getAllStoredData, replaceAllStoredData } from './storage';
-import { mergeStoredData, sanitizeStoredData, daysSince, type StoredData } from './merge';
-import { generateSyncCode, isValidSyncCode, normalizeSyncCode } from './syncCode';
+import { mergeStoredData, sanitizeStoredData, daysSince, missingFrom, type StoredData } from './merge';
+import { isValidSyncCode, normalizeSyncCode } from './syncCode';
 import { formatDate } from './utils';
 
 const CODE_KEY = 'sync_code';
@@ -18,7 +18,15 @@ const REQUEST_TIMEOUT_MS = 10000;
 /** Événement émis sur `window` après chaque tentative, avec le résultat en `detail`. */
 export const SYNC_STATUS_EVENT = 'prayer-sync-status';
 
-export type SyncFailure = 'no_code' | 'bad_code' | 'offline' | 'unknown_code' | 'rate_limited' | 'server';
+export type SyncFailure =
+  | 'no_code'
+  | 'bad_code'
+  | 'offline'
+  | 'unknown_code'
+  | 'rate_limited'
+  | 'too_large'
+  | 'full'
+  | 'server';
 export type SyncOutcome = { ok: true; at: number } | { ok: false; reason: SyncFailure };
 
 export const SYNC_MESSAGES: Record<SyncFailure, string> = {
@@ -27,6 +35,8 @@ export const SYNC_MESSAGES: Record<SyncFailure, string> = {
   offline: 'Pas de connexion au serveur. Vos moments restent enregistrés sur cet appareil et partiront à la prochaine connexion.',
   unknown_code: "Ce code n'existe pas. Vérifiez-le sur votre autre appareil.",
   rate_limited: "Trop d'essais. Patientez un moment puis réessayez.",
+  too_large: 'Le carnet est trop volumineux pour être envoyé. Vos moments restent enregistrés sur cet appareil.',
+  full: "Le serveur n'accepte plus de nouveaux carnets pour le moment. Vos moments restent enregistrés sur cet appareil.",
   server: 'Le serveur a rencontré un problème. Vos moments restent enregistrés sur cet appareil.',
 };
 
@@ -81,30 +91,50 @@ function pendingDays(local: StoredData): StoredData {
   return daysSince(local, formatDate(from));
 }
 
-async function post(code: string, create: boolean, days: StoredData): Promise<{ status: number; days?: StoredData }> {
+interface Reply {
+  status: number;
+  days?: StoredData;
+  code?: string;
+}
+
+async function post(body: { code?: string; create?: true; days: StoredData }): Promise<Reply> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
     const res = await fetch('/api/sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, create, days }),
+      body: JSON.stringify(body),
       cache: 'no-store',
       signal: controller.signal,
     });
     if (!res.ok) return { status: res.status };
-    const json = (await res.json()) as { days?: unknown };
-    return { status: 200, days: sanitizeStoredData(json.days) };
+    const json = (await res.json()) as { days?: unknown; code?: unknown };
+    return {
+      status: res.status,
+      days: sanitizeStoredData(json.days),
+      code: typeof json.code === 'string' && isValidSyncCode(json.code) ? json.code : undefined,
+    };
   } finally {
     clearTimeout(timer);
   }
 }
 
 function failureFor(status: number): SyncFailure {
-  if (status === 404) return 'unknown_code';
-  if (status === 429) return 'rate_limited';
-  if (status === 400) return 'bad_code';
-  return 'server';
+  switch (status) {
+    case 400:
+      return 'bad_code';
+    case 404:
+      return 'unknown_code';
+    case 413:
+      return 'too_large';
+    case 429:
+      return 'rate_limited';
+    case 507:
+      return 'full';
+    default:
+      return 'server';
+  }
 }
 
 /** Fusionne la réponse du serveur dans la copie locale, relue à l'instant pour ne rien écraser. */
@@ -121,16 +151,21 @@ function succeed(): SyncOutcome {
   return outcome;
 }
 
-async function exchange(code: string, create: boolean, days: StoredData): Promise<SyncOutcome> {
+/**
+ * Envoie `days` au carnet `code` et applique la réponse. Si le serveur ignore encore
+ * un moment connu de cet appareil (carnet restauré, envoi partiel), renvoie tout.
+ */
+async function exchange(code: string, days: StoredData): Promise<SyncOutcome> {
   try {
-    const res = await post(code, create, days);
+    let res = await post({ code, days });
     if (res.status !== 200 || !res.days) return { ok: false, reason: failureFor(res.status) };
     applyServerData(res.days);
-    // Le serveur ignore des jours que cet appareil connaît (carnet recréé, envoi partiel) : on renvoie tout.
+
     const local = localData();
-    if (Object.keys(local).some((date) => !(date in (res.days as StoredData)))) {
-      const full = await post(code, true, local);
-      if (full.status === 200 && full.days) applyServerData(full.days);
+    if (missingFrom(local, res.days)) {
+      res = await post({ code, days: local });
+      if (res.status !== 200 || !res.days) return { ok: false, reason: failureFor(res.status) };
+      applyServerData(res.days);
     }
     return succeed();
   } catch {
@@ -156,7 +191,7 @@ export function syncNow(): Promise<SyncOutcome> {
       again = false;
       const code = getSyncCode();
       if (!code) return { ok: false, reason: 'no_code' } as SyncOutcome;
-      outcome = await exchange(code, true, pendingDays(localData()));
+      outcome = await exchange(code, pendingDays(localData()));
     } while (again && outcome.ok);
     if (!outcome.ok) emit(outcome);
     return outcome;
@@ -166,20 +201,28 @@ export function syncNow(): Promise<SyncOutcome> {
   return inflight;
 }
 
-/** Premier appareil : crée un carnet avec tous les moments de cet appareil. */
-export async function createCarnet(): Promise<SyncOutcome & { code?: string }> {
-  const code = generateSyncCode();
-  const outcome = await exchange(code, true, localData());
-  if (outcome.ok) write(CODE_KEY, code);
-  else emit(outcome);
-  return outcome.ok ? { ...outcome, code } : outcome;
+/** Premier appareil : le serveur crée un carnet avec tous les moments de cet appareil. */
+export async function createCarnet(): Promise<SyncOutcome> {
+  try {
+    const res = await post({ create: true, days: localData() });
+    if (res.status !== 201 || !res.days || !res.code) {
+      const outcome: SyncOutcome = { ok: false, reason: failureFor(res.status) };
+      emit(outcome);
+      return outcome;
+    }
+    write(CODE_KEY, res.code);
+    applyServerData(res.days);
+    return succeed();
+  } catch {
+    return { ok: false, reason: 'offline' };
+  }
 }
 
 /** Appareil suivant : rejoint un carnet existant et y verse ses propres moments. */
 export async function joinCarnet(input: string): Promise<SyncOutcome> {
   const code = normalizeSyncCode(input);
   if (!isValidSyncCode(code)) return { ok: false, reason: 'bad_code' };
-  const outcome = await exchange(code, false, localData());
+  const outcome = await exchange(code, localData());
   if (outcome.ok) write(CODE_KEY, code);
   return outcome;
 }

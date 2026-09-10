@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { readCarnet, updateCarnet, CarnetLimitError } from '../lib/carnetStore.ts';
+import { readCarnet, updateCarnet, carnetExists, CarnetLimitError } from '../lib/carnetStore.ts';
 
 const fresh = () => mkdtempSync(path.join(tmpdir(), 'carnet-'));
 const d = (n: number) => ({
@@ -67,5 +67,23 @@ test('la création est refusée au-delà du nombre maximal de carnets', async ()
   // mettre à jour un carnet existant reste permis
   await updateCarnet('AAAAAAAA', () => d(2), { dir, maxCarnets: 1 });
   assert.deepEqual(await readCarnet('AAAAAAAA', { dir }), d(2));
+  rmSync(dir, { recursive: true });
+});
+
+test('un fichier corrompu est mis de côté et le carnet repart vide au lieu de rester bloqué', async () => {
+  const dir = fresh();
+  writeFileSync(path.join(dir, 'ABCDEFGH.json'), '{ pas du json');
+  assert.deepEqual(await readCarnet('ABCDEFGH', { dir }), {});
+  const out = await updateCarnet('ABCDEFGH', (cur) => ({ ...(cur ?? {}), ...d(3) }), { dir });
+  assert.deepEqual(out, d(3));
+  assert.equal(readdirSync(dir).filter((f) => f.includes('.corrupt-')).length, 1, 'le fichier abîmé est conservé à part');
+  rmSync(dir, { recursive: true });
+});
+
+test('carnetExists distingue un carnet présent d un carnet absent', async () => {
+  const dir = fresh();
+  assert.equal(await carnetExists('ABCDEFGH', { dir }), false);
+  await updateCarnet('ABCDEFGH', () => ({}), { dir });
+  assert.equal(await carnetExists('ABCDEFGH', { dir }), true);
   rmSync(dir, { recursive: true });
 });
