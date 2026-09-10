@@ -67,27 +67,7 @@ export function getMonthEnd(date: Date): Date {
 /**
  * Génère un tableau de dates pour un mois donné avec les jours précédents/suivants pour remplir la grille
  */
-export function getMonthDates(year: number, month: number): Date[] {
-  const dates: Date[] = [];
-  
-  // Premier jour du mois
-  const firstDayOfMonth = new Date(year, month, 1);
-  
-  // Jour de la semaine du premier jour (0 = dimanche, 1 = lundi, etc.)
-  const firstDayWeekday = firstDayOfMonth.getDay();
-  
-  // Commencer au dimanche de la semaine qui contient le premier jour du mois
-  const startDate = new Date(firstDayOfMonth);
-  startDate.setDate(startDate.getDate() - firstDayWeekday);
-  
-  // Générer 42 jours (6 semaines) pour remplir complètement la grille du calendrier
-  for (let i = 0; i < 42; i++) {
-    const date = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000));
-    dates.push(date);
-  }
-  
-  return dates;
-}
+export { getMonthDates } from './calendarDates';
 
 /**
  * Vérifie si deux dates sont le même jour
