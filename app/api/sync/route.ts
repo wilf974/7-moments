@@ -3,15 +3,19 @@
  *
  * Créer un carnet (premier appareil) : { create: true, days }
  *   → { code, days } — le code est tiré par le serveur.
- * Synchroniser / rejoindre :           { code, days }
+ * Synchroniser / rejoindre :           { code, days, client? }
  *   → { days } — le carnet complet après fusion ; 404 si le code n'existe pas.
  *
  * Le serveur fusionne (union) ce qu'il reçoit avec ce qu'il a : il ne supprime jamais rien.
+ * Si la fusion apporte des moments nouveaux, les autres appareils abonnés à
+ * /api/sync/events reçoivent un signal et se synchronisent aussitôt.
  */
-import { mergeStoredData, sanitizeStoredData, type StoredData } from '@/lib/merge';
+import { countMoments, mergeStoredData, sanitizeStoredData, type StoredData } from '@/lib/merge';
 import { generateSyncCode, normalizeSyncCode, isValidSyncCode } from '@/lib/syncCode';
 import { updateCarnet, carnetExists, CarnetLimitError } from '@/lib/carnetStore';
 import { createRateLimiter } from '@/lib/rateLimit';
+import { syncHub } from '@/lib/syncHub';
+import { isValidClientId } from '@/lib/sse';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -76,7 +80,7 @@ export async function POST(req: Request) {
     return reply(400, { error: 'bad_json' });
   }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return reply(400, { error: 'bad_json' });
-  const body = parsed as { code?: unknown; create?: unknown; days?: unknown };
+  const body = parsed as { code?: unknown; create?: unknown; days?: unknown; client?: unknown };
   const incoming = sanitizeStoredData(body.days);
 
   try {
@@ -90,11 +94,19 @@ export async function POST(req: Request) {
     const code = typeof body.code === 'string' ? normalizeSyncCode(body.code) : '';
     if (!isValidSyncCode(code)) return reply(400, { error: 'bad_code' });
 
-    const days = await updateCarnet(code, (current) => (current === null ? null : mergeBounded(current, incoming)));
+    const change = { added: false };
+    const days = await updateCarnet(code, (current) => {
+      if (current === null) return null;
+      const merged = mergeBounded(current, incoming);
+      change.added = countMoments(merged) > countMoments(current);
+      return merged;
+    });
     if (days === null) {
       unknownCodes.hit(ip);
       return reply(404, { error: 'unknown_code' });
     }
+    // Seulement s'il y a du nouveau : sinon les appareils se renverraient le signal sans fin
+    if (change.added) syncHub.publish(code, { at: Date.now(), from: isValidClientId(body.client) ? body.client : null });
     return reply(200, { days });
   } catch (error) {
     if (error instanceof TooLargeError) return reply(413, { error: 'too_large' });

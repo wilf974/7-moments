@@ -10,6 +10,7 @@ import { getAllStoredData, replaceAllStoredData } from './storage';
 import { mergeStoredData, sanitizeStoredData, daysSince, missingFrom, type StoredData } from './merge';
 import { isValidSyncCode, normalizeSyncCode } from './syncCode';
 import { formatDate } from './utils';
+import { getClientId } from './clientId';
 
 const CODE_KEY = 'sync_code';
 const LAST_OK_KEY = 'sync_last_ok';
@@ -97,7 +98,8 @@ interface Reply {
   code?: string;
 }
 
-async function post(body: { code?: string; create?: true; days: StoredData }): Promise<Reply> {
+async function post(payload: { code?: string; create?: true; days: StoredData }): Promise<Reply> {
+  const body = { ...payload, client: getClientId() };
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
@@ -223,6 +225,9 @@ export async function joinCarnet(input: string): Promise<SyncOutcome> {
   const code = normalizeSyncCode(input);
   if (!isValidSyncCode(code)) return { ok: false, reason: 'bad_code' };
   const outcome = await exchange(code, localData());
-  if (outcome.ok) write(CODE_KEY, code);
+  if (outcome.ok) {
+    write(CODE_KEY, code);
+    emit(outcome); // de nouveau, code enregistré : la synchro instantanée peut s'ouvrir
+  }
   return outcome;
 }

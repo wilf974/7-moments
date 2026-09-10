@@ -90,6 +90,13 @@ export function missingFrom(local: StoredData, server: StoredData): boolean {
   return false;
 }
 
+/** Nombre total de moments du carnet (sert à savoir si une fusion a apporté du nouveau). */
+export function countMoments(data: StoredData): number {
+  let n = 0;
+  for (const day of Object.values(data)) n += day.moments.length;
+  return n;
+}
+
 /** Sous-ensemble des jours à partir d'une date (incluse). `null` renvoie tout. */
 export function daysSince(data: StoredData, fromDate: string | null): StoredData {
   if (!fromDate) return { ...data };

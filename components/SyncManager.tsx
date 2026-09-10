@@ -5,10 +5,12 @@
  * - installe le service worker, pour que l'app s'ouvre même sans connexion ;
  * - demande au navigateur de ne pas effacer les données de l'app ;
  * - synchronise le carnet à l'ouverture, au retour sur l'app, au retour du réseau
- *   et après chaque moment enregistré.
+ *   et après chaque moment enregistré ;
+ * - garde ouverte, quand l'app est affichée, la connexion de synchronisation instantanée.
  */
 import { useEffect } from 'react';
-import { syncNow } from '@/lib/sync';
+import { syncNow, SYNC_STATUS_EVENT } from '@/lib/sync';
+import { ensureLive, stopLive } from '@/lib/liveSync';
 
 export default function SyncManager() {
   useEffect(() => {
@@ -24,18 +26,29 @@ export default function SyncManager() {
     const sync = () => {
       void syncNow();
     };
-    const onVisible = () => {
+    // Visible : on synchronise et on rouvre le direct. Masquée : ensureLive ferme la connexion.
+    const onVisibility = () => {
       if (document.visibilityState === 'visible') sync();
+      ensureLive();
+    };
+    const onOnline = () => {
+      sync();
+      ensureLive();
     };
 
     sync();
-    document.addEventListener('visibilitychange', onVisible);
-    window.addEventListener('online', sync);
+    ensureLive();
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('online', onOnline);
     window.addEventListener('prayer-moment-saved', sync);
+    // Appareil relié ou délié : ouvrir ou fermer le direct en conséquence
+    window.addEventListener(SYNC_STATUS_EVENT, ensureLive);
     return () => {
-      document.removeEventListener('visibilitychange', onVisible);
-      window.removeEventListener('online', sync);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('online', onOnline);
       window.removeEventListener('prayer-moment-saved', sync);
+      window.removeEventListener(SYNC_STATUS_EVENT, ensureLive);
+      stopLive();
     };
   }, []);
 

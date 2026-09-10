@@ -17,6 +17,7 @@ import {
   type SyncOutcome,
 } from '@/lib/sync';
 import { formatSyncCode } from '@/lib/syncCode';
+import { isLiveConnected, LIVE_STATUS_EVENT } from '@/lib/liveSync';
 
 const button =
   'w-full min-h-[48px] rounded-lg px-6 py-3 font-medium shadow-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed';
@@ -35,6 +36,7 @@ export default function SyncSettings() {
   const [busy, setBusy] = useState(false);
   const [joining, setJoining] = useState(false);
   const [input, setInput] = useState('');
+  const [live, setLive] = useState(false);
 
   const reload = useCallback(() => {
     setCode(getSyncCode());
@@ -48,8 +50,14 @@ export default function SyncSettings() {
       reload();
       setError(outcome.ok || outcome.reason === 'no_code' ? null : SYNC_MESSAGES[outcome.reason]);
     };
+    const onLive = () => setLive(isLiveConnected());
+    onLive();
     window.addEventListener(SYNC_STATUS_EVENT, onStatus);
-    return () => window.removeEventListener(SYNC_STATUS_EVENT, onStatus);
+    window.addEventListener(LIVE_STATUS_EVENT, onLive);
+    return () => {
+      window.removeEventListener(SYNC_STATUS_EVENT, onStatus);
+      window.removeEventListener(LIVE_STATUS_EVENT, onLive);
+    };
   }, [reload]);
 
   const run = async (action: () => Promise<SyncOutcome>) => {
@@ -90,6 +98,9 @@ export default function SyncSettings() {
             <p className="text-3xl font-bold tracking-widest text-[#78350F] my-1 select-all">{formatSyncCode(code)}</p>
             <p className="text-sm text-[#92400E]">
               {lastSync ? `Synchronisé ${formatLastSync(lastSync)}` : 'Pas encore synchronisé'}
+            </p>
+            <p className={`text-sm mt-1 ${live ? 'text-green-700' : 'text-[#92400E]'}`}>
+              {live ? '● Synchronisation instantanée active' : '○ Synchronisation instantanée en attente de connexion'}
             </p>
           </div>
           <p className="text-sm text-[#92400E]">

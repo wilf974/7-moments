@@ -1,5 +1,15 @@
 # Historique du Projet 7-moments
 
+## 2026-09-10 (soir) - Synchronisation instantanée
+
+Demande : que les appareils reliés se mettent à jour tout de suite, « style websocket ».
+
+- **Server-Sent Events plutôt que WebSocket** : il suffit que le serveur pousse un signal « le carnet a changé ». SSE tient dans une route Next.js (`GET /api/sync/events?code=…`), sans serveur Node sur mesure, sans dépendance, sans changement nginx (`X-Accel-Buffering: no`), avec reconnexion automatique dans les navigateurs.
+- `POST /api/sync` publie un signal seulement si la fusion a ajouté des moments (sinon les appareils se renverraient le signal sans fin). Le signal porte l'identifiant de l'onglet d'origine, qui l'ignore.
+- Relais en mémoire `lib/syncHub.ts` (sur `globalThis`, partagé par les deux routes). Battement de cœur toutes les 25 s. Limites : 10 connexions par carnet, 200 au total, 60 ouvertures par 10 min et par IP.
+- Navigateur (`lib/liveSync.ts`) : connexion ouverte seulement quand l'app est affichée et l'appareil relié, fermée en arrière-plan ; à chaque (re)connexion, une synchro rattrape ce qui a été manqué. Indicateur dans Réglages > Mes appareils.
+- Tests : 39 (hub, format SSE, identifiant d'onglet, comptage).
+
 ## 2026-09-10 - Carnet partagé entre appareils, hors connexion, bougie réglable
 
 ### Contexte (retour de l'utilisateur principal, Samsung + iPad)
