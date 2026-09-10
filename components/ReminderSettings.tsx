@@ -9,6 +9,8 @@ import {
   setReminderEnabled,
   scheduleReminders,
 } from '@/lib/notifications';
+import SyncSettings from '@/components/SyncSettings';
+import TimerSettings from '@/components/TimerSettings';
 
 interface ReminderSettingsProps {
   isOpen: boolean;
@@ -75,10 +77,10 @@ export default function ReminderSettings({ isOpen, onClose }: ReminderSettingsPr
           <div className="sticky top-0 bg-[#FFFBEB] border-b border-[#FDE68A] p-6 flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-[family-name:var(--font-playfair)] font-bold text-[#78350F]">
-                Rappels de Prière
+                Réglages
               </h2>
               <p className="text-sm text-[#92400E] mt-1">
-                Recevez un rappel aux heures canoniques
+                Appareils, durée de la bougie et rappels
               </p>
             </div>
             <button
@@ -94,6 +96,14 @@ export default function ReminderSettings({ isOpen, onClose }: ReminderSettingsPr
 
           {/* Content */}
           <div className="p-6 space-y-6">
+            <SyncSettings />
+
+            <TimerSettings />
+
+            <h3 className="font-[family-name:var(--font-playfair)] font-semibold text-[#78350F] text-lg border-t border-[#FDE68A] pt-6">
+              Rappels de prière
+            </h3>
+
             {/* Permission Section */}
             <div className="space-y-3">
               {!notificationSupported && (

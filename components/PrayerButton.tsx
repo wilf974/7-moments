@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { savePrayerMoment } from '@/lib/storage';
 import { usePrayerState } from '@/lib/usePrayerState';
 import { getPlatformInfo } from '@/lib/storage';
+import { getTimerDuration } from '@/lib/settings';
 
 interface PrayerButtonProps {
   onPrayerStarted?: () => void;
@@ -32,7 +33,7 @@ export default function PrayerButton({
     try {
       const platformInfo = getPlatformInfo();
       const platform = platformInfo?.platform || 'web';
-      savePrayerMoment(platform);
+      savePrayerMoment(platform, getTimerDuration());
       refresh();
 
       onPrayerStarted?.();

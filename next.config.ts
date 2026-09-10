@@ -55,6 +55,25 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // Le service worker doit être revérifié à chaque visite (sinon une nouvelle version met 30 jours à arriver)
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache',
+          },
+        ],
+      },
+      {
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store',
+          },
+        ],
+      },
     ];
   },
 };

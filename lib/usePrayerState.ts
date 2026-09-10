@@ -25,17 +25,27 @@ export function usePrayerState() {
     refresh();
   }, [refresh]);
 
-  // Intervalle horaire unique pour détecter le changement de jour
+  // Changement de jour pendant que l'app reste ouverte : relecture chaque minute
   useEffect(() => {
-    const interval = setInterval(refresh, 60 * 60 * 1000);
+    const interval = setInterval(refresh, 60 * 1000);
     return () => clearInterval(interval);
   }, [refresh]);
 
-  // Écouter les mises à jour depuis StorageSync (autres onglets)
+  // Relecture quand l'app revient au premier plan (téléphone déverrouillé, onglet repris)
+  // et quand d'autres onglets ou d'autres appareils (synchronisation) ont écrit
   useEffect(() => {
     const handler = () => refresh();
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
     window.addEventListener('prayer-data-updated', handler);
-    return () => window.removeEventListener('prayer-data-updated', handler);
+    window.addEventListener('pageshow', handler);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.removeEventListener('prayer-data-updated', handler);
+      window.removeEventListener('pageshow', handler);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [refresh]);
 
   return { todayCount, isCompleted, refresh };

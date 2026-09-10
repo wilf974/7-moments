@@ -11,6 +11,7 @@ import { Platform } from '@/types';
 import { usePrayerState } from '@/lib/usePrayerState';
 import { getRandomVerse, BibleVerse } from '@/lib/verses';
 import { scheduleReminders, hasAnyReminderEnabled } from '@/lib/notifications';
+import { getTimerDuration } from '@/lib/settings';
 
 const VerseDisplay = lazy(() => import('@/components/VerseDisplay'));
 
@@ -20,6 +21,7 @@ export default function Home() {
   const [showVerse, setShowVerse] = useState(false);
   const [currentVerse, setCurrentVerse] = useState<BibleVerse | null>(null);
   const [showReminders, setShowReminders] = useState(false);
+  const [timerDuration, setTimerDuration] = useState(30);
 
   const { todayCount, isCompleted, refresh } = usePrayerState();
 
@@ -31,6 +33,7 @@ export default function Home() {
   }, []);
 
   const handlePrayerStarted = () => {
+    setTimerDuration(getTimerDuration());
     setShowTimer(true);
     refresh();
   };
@@ -77,7 +80,8 @@ export default function Home() {
       <button
         onClick={() => setShowReminders(true)}
         className="fixed top-4 left-4 z-40 bg-[#FFFBEB] border border-[#FDE68A] rounded-full p-2 shadow-sm hover:shadow-md transition-all text-[#D97706] hover:text-[#92400E]"
-        title="Paramètres des rappels"
+        title="Réglages"
+        aria-label="Réglages"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -168,7 +172,7 @@ export default function Home() {
               </div>
 
               <Timer
-                duration={60}
+                duration={timerDuration}
                 onComplete={handleTimerCompleted}
                 onNext={handleNextMoment}
                 autoStart={true}
@@ -183,7 +187,7 @@ export default function Home() {
       <footer className="text-center py-8 px-4 text-[#92400E] text-sm">
         <p className="font-[family-name:var(--font-playfair)] italic">
           Application 7 Rendez-vous de Prière •
-          Données stockées localement sur votre appareil
+          Vos moments sont enregistrés sur cet appareil, et partagés entre vos appareils si vous les reliez
         </p>
         <p className="mt-2 font-[family-name:var(--font-playfair)] italic">
           Développé avec ❤️ pour votre cheminement spirituel

@@ -4,7 +4,7 @@
  * Calendrier avec navigation mensuelle - Thème "Chapelle Dorée" Amber/Gold
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { parseDate, formatDate, getMonthName } from '@/lib/utils';
 import { getMonthData } from '@/lib/storage';
 
@@ -44,21 +44,39 @@ export default function SimpleCalendar() {
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [monthData, setMonthData] = useState<MonthData | null>(null);
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
+  const [dataVersion, setDataVersion] = useState(0);
+  const lastMonthKey = useRef('');
+
+  // Relire quand la synchronisation apporte les moments des autres appareils
+  useEffect(() => {
+    const onUpdate = () => setDataVersion((v) => v + 1);
+    window.addEventListener('prayer-data-updated', onUpdate);
+    return () => window.removeEventListener('prayer-data-updated', onUpdate);
+  }, []);
 
   // Charger les données du mois actuel
   useEffect(() => {
     const realMonthData = getMonthData(currentYear, currentMonth);
     setMonthData(realMonthData);
 
-    // Sélectionner automatiquement le jour d'aujourd'hui par défaut si on est sur le mois actuel
-    if (currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
-      const todayFormatted = formatDate(today);
-      const todayData = realMonthData.days.find(day => day.date === todayFormatted);
-      setSelectedDay(todayData || realMonthData.days[0] || null);
-    } else {
-      setSelectedDay(realMonthData.days[0] || null);
-    }
-  }, [currentMonth, currentYear, today]);
+    const monthKey = `${currentYear}-${currentMonth}`;
+    const monthChanged = lastMonthKey.current !== monthKey;
+    lastMonthKey.current = monthKey;
+
+    setSelectedDay((previous) => {
+      // Même mois, données rafraîchies : garder le jour sélectionné, avec ses nouvelles valeurs
+      if (!monthChanged && previous) {
+        const same = realMonthData.days.find((day) => day.date === previous.date);
+        if (same) return same;
+      }
+      // Sélectionner automatiquement le jour d'aujourd'hui par défaut si on est sur le mois actuel
+      if (currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
+        const todayFormatted = formatDate(today);
+        return realMonthData.days.find((day) => day.date === todayFormatted) || realMonthData.days[0] || null;
+      }
+      return realMonthData.days[0] || null;
+    });
+  }, [currentMonth, currentYear, today, dataVersion]);
 
   // Navigation vers le mois précédent
   const handlePreviousMonth = () => {

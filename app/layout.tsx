@@ -3,6 +3,7 @@ import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import StorageSync from "@/components/StorageSync";
 import StorageInit from "@/components/StorageInit";
+import SyncManager from "@/components/SyncManager";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -110,6 +111,7 @@ export default function RootLayout({
       >
         <StorageSync />
         <StorageInit />
+        <SyncManager />
         {children}
       </body>
     </html>

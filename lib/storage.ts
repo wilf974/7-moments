@@ -35,7 +35,7 @@ interface StoredData {
 /**
  * Sauvegarde un moment de prière
  */
-export function savePrayerMoment(platform: Platform): void {
+export function savePrayerMoment(platform: Platform, duration = DEFAULT_CONFIG.timerDuration): void {
   try {
     const today = getTodayString();
     const allData = getAllStoredData();
@@ -55,24 +55,36 @@ export function savePrayerMoment(platform: Platform): void {
     const newMoment: PrayerMoment = {
       timestamp: Date.now(),
       platform,
-      duration: DEFAULT_CONFIG.timerDuration,
+      duration,
     };
-    
+
     dayData.moments.push(newMoment);
-    dayData.count = dayData.moments.length;
+    dayData.count = Math.min(dayData.moments.length, DEFAULT_CONFIG.maxMomentsPerDay);
     dayData.completed = dayData.count >= DEFAULT_CONFIG.maxMomentsPerDay;
-    
+
     // Mettre à jour toutes les données
     allData[today] = dayData;
-    
-    // Sauvegarder UNIQUEMENT dans localStorage
+
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.PRAYER_DATA, JSON.stringify(allData));
+      // Prévient la synchronisation (components/SyncManager) qu'un moment attend d'être envoyé
+      window.dispatchEvent(new CustomEvent('prayer-moment-saved'));
     }
-    
-
   } catch (error) {
     console.error('Erreur lors de la sauvegarde du moment de prière:', error);
+  }
+}
+
+/**
+ * Remplace toutes les journées (après fusion avec les autres appareils).
+ */
+export function replaceAllStoredData(data: StoredData): void {
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.PRAYER_DATA, JSON.stringify(data));
+    }
+  } catch (error) {
+    console.error('Erreur lors de l\'écriture des données fusionnées:', error);
   }
 }
 

@@ -21,19 +21,21 @@ export default function CalendarPage() {
   });
 
   useEffect(() => {
-    const userStats = getUserStats();
-    const currentStreak = getCurrentStreak();
-    const bestStreak = getBestStreak();
-    const weekSummary = getWeekSummary();
-
-    setStats({
-      totalMoments: userStats.totalMoments,
-      currentStreak,
-      bestStreak,
-      daysCompleted: userStats.daysCompleted,
-      lastActivity: userStats.lastActivity,
-      weekSummary,
-    });
+    const load = () => {
+      const userStats = getUserStats();
+      setStats({
+        totalMoments: userStats.totalMoments,
+        currentStreak: getCurrentStreak(),
+        bestStreak: getBestStreak(),
+        daysCompleted: userStats.daysCompleted,
+        lastActivity: userStats.lastActivity,
+        weekSummary: getWeekSummary(),
+      });
+    };
+    load();
+    // Recalcul quand la synchronisation apporte les moments des autres appareils
+    window.addEventListener('prayer-data-updated', load);
+    return () => window.removeEventListener('prayer-data-updated', load);
   }, []);
 
   // Noms des jours pour les 7 derniers jours
@@ -175,7 +177,7 @@ export default function CalendarPage() {
       <footer className="text-center py-8 px-4 text-[#92400E] text-sm">
         <p>
           Application 7 Rendez-vous de Prière •
-          Données stockées localement sur votre appareil
+          Vos moments sont enregistrés sur cet appareil, et partagés entre vos appareils si vous les reliez
         </p>
       </footer>
     </div>

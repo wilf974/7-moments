@@ -11,6 +11,10 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOSTNAME=0.0.0.0
+      - CARNET_DIR=/data/carnets
+    volumes:
+      # Carnets synchronisés entre appareils. Le dossier doit appartenir à l'uid 1001 (nextjs).
+      - ./data:/data
     restart: unless-stopped
     read_only: true
     tmpfs:
